@@ -1,0 +1,11 @@
+export const REGION = "us-east-1";
+export const SITE_NAME = "video-block-explorer"
+export const COMP_NAME = "MyVideo";
+export const DURATION_IN_FRAMES = 500;
+export const VIDEO_WIDTH = 540;
+export const VIDEO_HEIGHT = 960;
+export const VIDEO_FPS = 30;
+export const COMPOSITION_ID = 'BlockchainVideo'
+export const DISK = 2048;
+export const RAM = 3009;
+export const TIMEOUT = 240;

@@ -4,7 +4,11 @@ import { getBlockchainProfile } from './blockchainProfiles';
 import { VideoPreview } from './MyVideo';
 import { z } from 'zod';
 import { CalculateMetadataFunction } from 'remotion';
-
+import { VIDEO_HEIGHT } from './config';
+import { VIDEO_WIDTH } from './config';
+import { VIDEO_FPS } from './config';
+import { COMPOSITION_ID } from './config';
+import { DURATION_IN_FRAMES } from './config';
 
 
 export const CompositionProps = z.object({
@@ -45,19 +49,13 @@ const calculateMetadata: CalculateMetadataFunction<
   };
 };
 
-export const REGION = "us-east-1";
 
-export const COMP_NAME = "MyVideo";
-export const DURATION_IN_FRAMES = 500;
-export const VIDEO_WIDTH = 540;
-export const VIDEO_HEIGHT = 960;
-export const VIDEO_FPS = 30;
 
 export const RemotionRoot: React.FC = () => {
   return (
     <>
       <Composition
-        id="DefaultVideo"
+        id={COMPOSITION_ID}
         component={VideoPreview}
         durationInFrames={DURATION_IN_FRAMES}
         fps={VIDEO_FPS}

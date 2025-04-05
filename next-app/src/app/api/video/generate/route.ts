@@ -7,21 +7,6 @@ import { fetchAddressBlockchainData, fetchNftTransfers, fetchTokenTransfers } fr
 import { generateTransactionReport } from '@/lib/llm';
 import { TransactionReport } from '@/types/report';
 
-interface VideoRequestData {
-  request_id: string;
-  user_address: string;
-  prompt: string;
-  duration: number;
-  status: string;
-  request_timestamp: string;
-  generated_text: string;
-}
-
-
-
-
-
-
 
 // Environment and configuration
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -55,20 +40,6 @@ const requestBodySchema = z.object({
   transaction_count: z.number(),
   activity_type: z.string(),
 });
-
-// user_address TEXT NOT NULL,
-// prompt TEXT NOT NULL,
-// duration TEXT NOT NULL,
-// report_address TEXT NOT NULL,
-// transaction_hash TEXT NOT NULL,
-// transaction_report JSONB,
-// transaction_status TEXT,
-// status TEXT NOT NULL,
-// request_timestamp TIMESTAMP NOT NULL,
-// chain_id INTEGER NOT NULL,
-// network_name TEXT NOT NULL,
-// balance TEXT NOT NULL,
-// transaction_count INTEGER NOT NULL,
 
 // Database operations
 async function saveVideoRequest(supabaseAdmin: SupabaseClient, 

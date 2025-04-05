@@ -13,6 +13,7 @@
     "@fortawesome/free-solid-svg-icons": "^6.7.2",
     "@fortawesome/react-fontawesome": "^0.2.2",
     "@remotion/cli": "^4.0.286",
+    "@remotion/lambda": "^4.0.286",
     "@remotion/player": "^4.0.286",
     "@supabase/supabase-js": "^2.49.4",
     "@vercel/analytics": "^1.5.0",
