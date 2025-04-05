@@ -20,6 +20,8 @@ CREATE TABLE IF NOT EXISTS video_requests (
   network_name TEXT NOT NULL,
   balance TEXT NOT NULL,
   transaction_count INTEGER NOT NULL,
+  video_uri TEXT NULL,
+  video_owner TEXT NULL,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

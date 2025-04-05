@@ -6,10 +6,11 @@ import { useRouter } from 'next/navigation';
 import { Player } from '@remotion/player';
 import { VideoPreview } from '@/remotion/MyVideo';
 import { TransactionReport } from '@/types/report';
-
-
+import { useWeb3 } from '@/contexts/Web3Context';
+import { ethers } from 'ethers';
 
 interface VideoDetails {
+  user_address: string;
   balance: string;
   transaction_count: number;
   network_name: string;
@@ -20,7 +21,40 @@ interface VideoDetails {
   report_address: string;
   status: string;
   duration: string;
+  video_uri: string | null;
+  video_owner: string | null;
 }
+
+// VideoReportNFT ABI - only the functions we need
+const VideoReportNFT_ABI = [
+  {
+    "inputs": [
+      {
+        "internalType": "address",
+        "name": "to",
+        "type": "address"
+      },
+      {
+        "internalType": "string",
+        "name": "videoURI",
+        "type": "string"
+      }
+    ],
+    "name": "mintVideoToken",
+    "outputs": [
+      {
+        "internalType": "uint256",
+        "name": "",
+        "type": "uint256"
+      }
+    ],
+    "stateMutability": "payable",
+    "type": "function"
+  }
+];
+
+// NFT contract address (this should come from your environment or constants)
+const NFT_CONTRACT_ADDRESS = "0x5FbDB2315678afecb367f032d93F642f64180aa3"; // Replace with actual address
 
 export function VideoStatusPage({ videoId }: { videoId: string }) {
   const [videoDetails, setVideoDetails] = useState<VideoDetails | null>(null);
@@ -29,7 +63,11 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
   const [renderLoading, setRenderLoading] = useState(false);
   const [renderUrl, setRenderUrl] = useState<string | null>(null);
   const [renderError, setRenderError] = useState<string | null>(null);
+  const [isMinting, setIsMinting] = useState(false);
+  const [mintError, setMintError] = useState<string | null>(null);
+  const [mintSuccess, setMintSuccess] = useState(false);
   const router = useRouter();
+  const { account, library, active, connectWallet } = useWeb3();
 
   useEffect(() => {
     if (!videoId) return;
@@ -81,7 +119,7 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ videoId }),
+        body: JSON.stringify({ videoId, address: videoDetails?.user_address }),
       });
       
       const data = await response.json();
@@ -96,6 +134,69 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
       setRenderError(err instanceof Error ? err.message : 'Failed to render video');
     } finally {
       setRenderLoading(false);
+    }
+  };
+
+  const handleMintNFT = async () => {
+    if (!videoDetails?.video_uri) {
+      setMintError("Video URI is required for minting");
+      return;
+    }
+    
+    try {
+      setIsMinting(true);
+      setMintError(null);
+      setMintSuccess(false);
+      
+      if (!active || !account) {
+        await connectWallet();
+      }
+      
+      if (!library || !account) {
+        throw new Error("Wallet not connected");
+      }
+      
+      const signer = await library.getSigner();
+      const nftContract = new ethers.Contract(
+        NFT_CONTRACT_ADDRESS,
+        VideoReportNFT_ABI,
+        signer
+      );
+      
+      // The mint price is 0.0001 ETH as specified in the contract
+      const mintPrice = ethers.parseEther("0.0001");
+      
+      // Call the contract's mint function
+      const tx = await nftContract.mintVideoToken(
+        account,
+        videoDetails.video_uri,
+        { value: mintPrice }
+      );
+      
+      // Wait for transaction to be mined
+      await tx.wait();
+      
+      // Update UI to show success
+      setMintSuccess(true);
+      
+      // Refresh video details to reflect the new ownership
+      const fetchUpdatedDetails = async () => {
+        try {
+          const response = await fetch(`/api/videos/${videoId}`);
+          const data = await response.json();
+          setVideoDetails(data.video);
+        } catch (err) {
+          console.error('Error refreshing video details:', err);
+        }
+      };
+      
+      await fetchUpdatedDetails();
+      
+    } catch (err) {
+      console.error('Error minting NFT:', err);
+      setMintError(err instanceof Error ? err.message : 'Failed to mint NFT');
+    } finally {
+      setIsMinting(false);
     }
   };
 
@@ -219,6 +320,65 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
               <p>{renderError}</p>
             </div>
           )}
+
+          {/* Video Ownership Information */}
+          <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
+            <h3 className="text-xl font-semibold mb-3 text-primary">Video Status</h3>
+            
+            {videoDetails.video_owner ? (
+              <div className="mb-3">
+                <p className="text-gray-300"><span className="font-medium">Owner:</span> {videoDetails.video_owner}</p>
+                {videoDetails.video_uri && (
+                  <p className="text-gray-300 mt-2">
+                    <span className="font-medium">Video URI:</span>{" "}
+                    <a href={videoDetails.video_uri} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">
+                      {videoDetails.video_uri}
+                    </a>
+                  </p>
+                )}
+              </div>
+            ) : (
+              <div className="mb-3">
+                <p className="text-yellow-400 mb-2">This video doesn&apos;t have an owner yet.</p>
+                
+                {mintSuccess ? (
+                  <div className="p-3 bg-green-800/30 border border-green-700 rounded-md text-green-300">
+                    NFT minted successfully! Refreshing ownership data...
+                  </div>
+                ) : (
+                  <button 
+                    onClick={handleMintNFT}
+                    disabled={isMinting || !videoDetails.video_uri}
+                    className={`px-4 py-2 bg-gradient-to-r from-primary to-accent text-white rounded-md 
+                      ${isMinting || !videoDetails.video_uri ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} 
+                      transition-opacity flex items-center`}
+                  >
+                    {isMinting ? (
+                      <>
+                        <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                        Minting...
+                      </>
+                    ) : 'Mint This Video'}
+                  </button>
+                )}
+                
+                {mintError && (
+                  <div className="mt-2 p-2 bg-red-900/20 border border-red-800 rounded text-red-400 text-sm">
+                    {mintError}
+                  </div>
+                )}
+                
+                {!videoDetails.video_uri && (
+                  <div className="mt-2 text-amber-400 text-sm">
+                    You need to render the video first before minting
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
           <div className="flex justify-between mt-8">
             <button 

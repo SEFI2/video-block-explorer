@@ -3,7 +3,9 @@ import {
     AwsRegion,
     getRenderProgress,
     renderMediaOnLambda,
+    
   } from "@remotion/lambda/client";
+
 import { z } from "zod";
 import { createClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
@@ -32,7 +34,8 @@ const getSupabaseAdmin = () => {
   
 // Request body schema definition
 const requestBodySchema = z.object({
-    videoId: z.string()
+    videoId: z.string(),
+    address: z.string()
 });
 // Error response formatting
 function createErrorResponse(message: string, status: number) {
@@ -65,7 +68,8 @@ if (!supabaseAdmin) {
     }
 
     const {
-        videoId
+        videoId,
+        address
     } = parsedBody.data;
 
     const { error, data } = await supabaseAdmin.from('video_requests').select('*').eq('request_id', videoId).single();
@@ -84,14 +88,8 @@ if (!supabaseAdmin) {
         outroText: outro_text || "",
         reports: transaction_reports
       }}
-    //   renderId: string;
-    //   bucketName: string;
-    //   cloudWatchLogs: string;
-    //   cloudWatchMainLogs: string;
-    //   lambdaInsightsLogs: string;
-    //   folderInS3Console: string;
-    //   progressJsonInConsole: string;
-  const { renderId, bucketName, cloudWatchLogs, cloudWatchMainLogs, lambdaInsightsLogs, folderInS3Console, progressJsonInConsole } = await renderMediaOnLambda({
+
+    const { renderId, bucketName, cloudWatchLogs, cloudWatchMainLogs, lambdaInsightsLogs, folderInS3Console, progressJsonInConsole } = await renderMediaOnLambda({
     codec: "h264",
     functionName: speculateFunctionName({
       diskSizeInMb: DISK,
@@ -105,9 +103,10 @@ if (!supabaseAdmin) {
     framesPerLambda: 10,
     downloadBehavior: {
       type: "download",
-      fileName: "video.mp4",
+      fileName: `${videoId}-${address}.mp4`,
     },
   });
+
   console.log({renderId, bucketName, cloudWatchLogs, cloudWatchMainLogs, lambdaInsightsLogs, folderInS3Console, progressJsonInConsole})
 
   while(true){
@@ -128,6 +127,21 @@ if (!supabaseAdmin) {
     }
 
     if (renderProgress.done) {
+        // Update the video_request with video_uri and video_owner
+        const { error: updateError } = await supabaseAdmin
+            .from('video_requests')
+            .update({
+                video_uri: renderProgress.outputFile as string,
+                video_owner: address,
+                status: 'completed'
+            })
+            .eq('request_id', videoId);
+        
+        if (updateError) {
+            console.error('Error updating video request:', updateError);
+            return createErrorResponse('Failed to update video details', 500);
+        }
+        
         return createSuccessResponse(videoId, renderProgress.outputFile as string);
     }
     await sleep(3000);

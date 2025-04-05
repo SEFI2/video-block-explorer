@@ -31,8 +31,11 @@ describe("VideoReportNFT", function () {
   describe("Minting", function () {
     it("Should mint a new token and emit event", async function () {
       const videoURI = "ipfs://QmExample";
+      const renderId = "test-render-id";
+      const bucketName = "test-bucket";
+      const mintPrice = await videoReportNFT.MINT_PRICE();
       
-      await expect(videoReportNFT.mintVideoToken(addr1.address, videoURI))
+      await expect(videoReportNFT.mintVideoToken(addr1.address, videoURI, renderId, bucketName, { value: mintPrice }))
         .to.emit(videoReportNFT, "VideoTokenMinted")
         .withArgs(addr1.address, 0, videoURI);
       
@@ -42,30 +45,39 @@ describe("VideoReportNFT", function () {
 
     it("Should store video data correctly", async function () {
       const videoURI = "ipfs://QmExample";
+      const renderId = "test-render-id";
+      const bucketName = "test-bucket";
+      const mintPrice = await videoReportNFT.MINT_PRICE();
       
-      await videoReportNFT.mintVideoToken(addr1.address, videoURI);
+      await videoReportNFT.mintVideoToken(addr1.address, videoURI, renderId, bucketName, { value: mintPrice });
       
       const videoData = await videoReportNFT.getVideoData(0);
       expect(videoData.videoURI).to.equal(videoURI);
+      expect(videoData.renderId).to.equal(renderId);
+      expect(videoData.bucketName).to.equal(bucketName);
       expect(videoData.timestamp).to.be.greaterThan(0);
     });
   });
 
   describe("ETH handling", function () {
     it("Should receive ETH during minting", async function () {
-      const mintValue = ethers.parseEther("0.1");
+      const mintPrice = await videoReportNFT.MINT_PRICE();
       const videoURI = "ipfs://QmExample";
+      const renderId = "test-render-id";
+      const bucketName = "test-bucket";
       
-      await videoReportNFT.mintVideoToken(addr1.address, videoURI, { value: mintValue });
+      await videoReportNFT.mintVideoToken(addr1.address, videoURI, renderId, bucketName, { value: mintPrice });
       
-      expect(await ethers.provider.getBalance(await videoReportNFT.getAddress())).to.equal(mintValue);
+      expect(await ethers.provider.getBalance(await videoReportNFT.getAddress())).to.equal(mintPrice);
     });
 
     it("Should allow owner to withdraw ETH", async function () {
-      const mintValue = ethers.parseEther("0.1");
+      const mintPrice = await videoReportNFT.MINT_PRICE();
       const videoURI = "ipfs://QmExample";
+      const renderId = "test-render-id";
+      const bucketName = "test-bucket";
       
-      await videoReportNFT.mintVideoToken(addr1.address, videoURI, { value: mintValue });
+      await videoReportNFT.mintVideoToken(addr1.address, videoURI, renderId, bucketName, { value: mintPrice });
       
       const initialOwnerBalance = await ethers.provider.getBalance(owner.address);
       
@@ -80,10 +92,12 @@ describe("VideoReportNFT", function () {
     });
 
     it("Should not allow non-owners to withdraw", async function () {
-      const mintValue = ethers.parseEther("0.1");
+      const mintPrice = await videoReportNFT.MINT_PRICE();
       const videoURI = "ipfs://QmExample";
+      const renderId = "test-render-id";
+      const bucketName = "test-bucket";
       
-      await videoReportNFT.mintVideoToken(addr1.address, videoURI, { value: mintValue });
+      await videoReportNFT.mintVideoToken(addr1.address, videoURI, renderId, bucketName, { value: mintPrice });
       
       await expect(videoReportNFT.connect(addr1).withdraw()).to.be.revertedWithCustomError(
         videoReportNFT,

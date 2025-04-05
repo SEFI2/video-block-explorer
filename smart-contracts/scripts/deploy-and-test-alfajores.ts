@@ -56,8 +56,8 @@ async function main() {
       address: contractAddress as Address,
       abi: contractAbi,
       functionName: "mintVideoToken",
-      args: [account.address, videoURI],
-      value: parseEther("0.01")
+      args: [account.address, videoURI, "test-render-id", "test-bucket-name"],
+      value: parseEther("0.0001")
     });
     
     const txHash = await walletClient.writeContract(request);

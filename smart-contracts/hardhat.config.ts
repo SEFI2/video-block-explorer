@@ -13,7 +13,9 @@ const config: HardhatUserConfig = {
     alfajores: {
       url: process.env.ALFAJORES_URL || "",
       accounts: [PRIVATE_KEY],
-      chainId: 44787
+      chainId: 44787,
+      gasPrice: 30000000000, // 30 gwei (current is 25 gwei)
+      gas: 2100000 // Lower gas limit
     }
   },
   etherscan: {

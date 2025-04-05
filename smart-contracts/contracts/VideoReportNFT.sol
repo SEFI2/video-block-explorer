@@ -18,6 +18,9 @@ contract VideoReportNFT is ERC721Enumerable, Ownable {
         uint256 timestamp;
     }
     
+    // Price for minting a token (0.0001 ETH)
+    uint256 public constant MINT_PRICE = 0.0001 ether;
+    
     // Mapping from token ID to video data
     mapping(uint256 => VideoData) private _videoData;
     
@@ -34,6 +37,8 @@ contract VideoReportNFT is ERC721Enumerable, Ownable {
      * @return The ID of the newly minted token
      */
     function mintVideoToken(address to, string memory videoURI) external payable returns (uint256) {
+        require(msg.value == MINT_PRICE, "VideoReportNFT: Must send exactly 0.0001 ETH");
+        
         uint256 tokenId = _nextTokenId++;
         
         _mint(to, tokenId);
