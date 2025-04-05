@@ -33,7 +33,7 @@ export const MyVideos: React.FC = () => {
         console.log('Fetching videos for account:', account);
         
         // Fetch videos through API instead of direct Supabase query
-        const response = await fetch(`/api/videos/user/${account}`);
+        const response = await fetch(`/api/videos`);
         
         if (!response.ok) {
           throw new Error(`API error: ${response.status}`);
@@ -74,7 +74,7 @@ export const MyVideos: React.FC = () => {
   if (!active) {
     return (
       <div className="flex flex-col items-center justify-center p-8 min-h-[60vh]">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">My Videos</h2>
+        <h2 className="text-3xl font-bold mb-6 text-gray-800">All Videos</h2>
         <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl shadow-sm text-center max-w-md w-full">
           <div className="mb-4 text-gray-400">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -95,8 +95,8 @@ export const MyVideos: React.FC = () => {
     <div className="p-6 sm:p-8 max-w-7xl mx-auto">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-8">
         <div>
-          <h2 className="text-3xl font-bold text-gray-800">My Videos</h2>
-          <p className="text-gray-500 mt-1">Manage and view your generated videos</p>
+          <h2 className="text-3xl font-bold text-gray-800">All Videos</h2>
+          <p className="text-gray-500 mt-1">View all generated videos</p>
         </div>
         <Link 
           href="/" 
@@ -191,11 +191,24 @@ export const MyVideos: React.FC = () => {
                         >
                           View Details
                         </Link>
-                  
+                        
+                        {video.transactionReports?.videoUrl && (
+                          <a 
+                            href={video.transactionReports.videoUrl} 
+                            download={`video-${video.request_id}.mp4`}
+                            className="text-xs px-2 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-center"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                          >
+                            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          </a>
+                        )}
                       </div>
                     ) : (
                       <Link 
-                        href={`/video/${video.request_id}`}
+                        href={`/video/${video.id}`}
                         className="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-center block font-medium"
                       >
                         View Details

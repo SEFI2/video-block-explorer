@@ -24,7 +24,7 @@ export enum VideoStatus {
 
 // Video data structure
 export interface VideoData {
-  id: string;
+  request_id: string;
   status: VideoStatus;
   prompt: string;
   duration: string;
@@ -90,6 +90,7 @@ export interface StatusLabel {
 // Web3 context type
 export interface Web3ContextType {
   account?: string;
+  balance?: string;
   active: boolean;
   isLoading: boolean;
   error: Error | string | null;

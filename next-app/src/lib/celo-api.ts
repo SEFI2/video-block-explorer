@@ -7,6 +7,123 @@ import { Transaction } from "../types/onchain";
  * @param address The blockchain address to get information for
  * @returns Promise containing address information including balance, transactions and tokens
  */
+export async function fetchNftTransfers(address: string, durationInDays: number): Promise<{
+    transactions: Transaction[],
+    balance: string
+}> {
+    const result: {
+        transactions: Transaction[],
+        balance: string
+    } = {
+        transactions: [],
+        balance: ''
+    };
+  // Return object with address we're querying
+  const apiUrl = process.env.ALFAJORES_SCAN_API_URL;
+  const apiKey = process.env.CELOSCAN_API_KEY;
+  
+    console.log('apiUrl', apiUrl);
+    console.log('apiKey', apiKey);
+
+    if (!apiUrl || !apiKey) {
+        throw new Error('API URL or API Key is missing from environment variables');
+    }
+
+    // Calculate startblock based on durationInDays
+    const startBlock = await getBlockNumberFromDaysAgo(durationInDays, apiUrl, apiKey);
+    console.log('Using startBlock:', startBlock);
+
+    // Fetch address balance
+    const balanceResponse = await fetch(
+        `${apiUrl}?module=account&action=balance&address=${address}&tag=latest&apikey=${apiKey}`
+    );
+    const balanceData = await balanceResponse.json();
+    console.log('balanceData', balanceData);
+    if (balanceData.status === '1') {
+        result.balance = balanceData.result;
+    } else {
+        console.error('Failed to get balance:', balanceData);
+    }
+
+    // Fetch normal transactions
+    const txResponse = await fetch(
+        `${apiUrl}?module=account&action=tokennfttx&address=${address}&startblock=${startBlock}&sort=desc&apikey=${apiKey}`
+    );
+    const txData = await txResponse.json();
+    if (txData.status === '1') {
+        result.transactions = txData.result;
+    } else {
+        console.error('Failed to get transactions:', txData);
+    }
+        
+    return result;
+}
+
+// Blockchain data fetching
+/**
+ * Fetches blockchain data for an address from Celoscan API endpoints
+ * @param address The blockchain address to get information for
+ * @returns Promise containing address information including balance, transactions and tokens
+ */
+export async function fetchTokenTransfers(address: string, durationInDays: number): Promise<{
+    transactions: Transaction[],
+    balance: string
+}> {
+    const result: {
+        transactions: Transaction[],
+        balance: string
+    } = {
+        transactions: [],
+        balance: ''
+    };
+  // Return object with address we're querying
+  const apiUrl = process.env.ALFAJORES_SCAN_API_URL;
+  const apiKey = process.env.CELOSCAN_API_KEY;
+  
+    console.log('apiUrl', apiUrl);
+    console.log('apiKey', apiKey);
+
+    if (!apiUrl || !apiKey) {
+        throw new Error('API URL or API Key is missing from environment variables');
+    }
+
+    // Calculate startblock based on durationInDays
+    const startBlock = await getBlockNumberFromDaysAgo(durationInDays, apiUrl, apiKey);
+    console.log('Using startBlock:', startBlock);
+
+    // Fetch address balance
+    const balanceResponse = await fetch(
+        `${apiUrl}?module=account&action=balance&address=${address}&tag=latest&apikey=${apiKey}`
+    );
+    const balanceData = await balanceResponse.json();
+    console.log('balanceData', balanceData);
+    if (balanceData.status === '1') {
+        result.balance = balanceData.result;
+    } else {
+        console.error('Failed to get balance:', balanceData);
+    }
+
+    // Fetch normal transactions
+    const txResponse = await fetch(
+        `${apiUrl}?module=account&action=tokentx&address=${address}&startblock=${startBlock}&sort=desc&apikey=${apiKey}`
+    );
+    const txData = await txResponse.json();
+    if (txData.status === '1') {
+        result.transactions = txData.result;
+    } else {
+        console.error('Failed to get transactions:', txData);
+    }
+        
+    return result;
+}
+
+
+// Blockchain data fetching
+/**
+ * Fetches blockchain data for an address from Celoscan API endpoints
+ * @param address The blockchain address to get information for
+ * @returns Promise containing address information including balance, transactions and tokens
+ */
 export async function fetchAddressBlockchainData(address: string, durationInDays: number): Promise<{
     transactions: Transaction[],
     balance: string

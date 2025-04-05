@@ -2,44 +2,76 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { supabaseAdmin } from '@/lib/db/supabase';
 import { CreateVideoRequestParams } from '@/types/video';
+import { createClient } from '@supabase/supabase-js';
 
-export async function GET(request: NextRequest) {
-  // Get user address from URL params
-  const { searchParams } = new URL(request.url);
-  const userAddress = searchParams.get('userAddress');
-  
-  if (!userAddress) {
-    return NextResponse.json(
-      { error: 'User address is required' },
-      { status: 400 }
-    );
+// Create a direct Supabase client instance for this API route
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseServiceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+// Function to get Supabase admin client
+const getSupabaseAdmin = () => {
+  if (!supabaseUrl || !supabaseServiceRoleKey) {
+    console.error('Missing Supabase environment variables');
+    return null;
   }
   
-  if (!supabaseAdmin) {
-    return NextResponse.json(
-      { error: 'Database client not available' },
-      { status: 500 }
-    );
-  }
+  return createClient(supabaseUrl, supabaseServiceRoleKey, {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  });
+};
 
-  try {
-    const { data, error } = await supabaseAdmin
-      .from('video_requests')
-      .select('*')
-      .eq('user_address', userAddress)
-      .order('created_at', { ascending: false });
-      
-    if (error) throw error;
+
+export async function GET(
+    request: Request  ) {
+        console.log('API: Fetching videos');
     
-    return NextResponse.json({ videos: data });
-  } catch (error) {
-    console.error('Error fetching video requests:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch video requests' },
-      { status: 500 }
-    );
-  }
-}
+    // Get Supabase admin client for this request
+    const supabaseAdmin = getSupabaseAdmin();
+    
+    if (!supabaseAdmin) {
+      return NextResponse.json(
+        { error: 'Database connection failed. Check your environment variables.' },
+        { status: 500 }
+      );
+    }
+  
+    try {
+      
+      // Get videos for this user with full join of transaction reports
+      const { data, error } = await supabaseAdmin
+        .from('video_requests')
+        .select(`
+          *
+        `).
+        limit(100)
+        .order('created_at', { ascending: false });
+      
+      if (error) {
+        throw error;
+      }
+  
+      console.log(`API: Found ${data.length} videos`);
+    
+      
+      return NextResponse.json({
+        success: true,
+        videos: data
+      });
+    } catch (error: unknown) {
+      const errorMessage = error instanceof Error 
+        ? error.message 
+        : 'Failed to fetch user videos';
+        
+      console.error('Error fetching user videos:', error);
+      return NextResponse.json(
+        { error: errorMessage },
+        { status: 500 }
+      );
+    }
+} 
 
 export async function POST(request: NextRequest) {
   if (!supabaseAdmin) {

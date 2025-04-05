@@ -57,26 +57,11 @@ export async function GET(
 
     console.log(`API: Found ${data.length} videos for address ${normalizedAddress}`);
     
-    // Format the response to match the expected structure in the frontend
-    const formattedVideos = data.map(record => ({
-      id: record.request_id,
-      status: record.status as unknown as VideoStatus,
-      prompt: record.prompt,
-      duration: record.duration,
-      previewUrl: record.script_data?.previewUrl || '',
-      finalUrl: record.script_data?.finalUrl || '',
-      createdAt: new Date(record.created_at || record.request_timestamp).getTime(),
-      updatedAt: new Date(record.updated_at || record.request_timestamp).getTime(),
-      transactionReports: record.transaction_reports ? {
-        videoUrl: record.transaction_reports.video_url,
-        thumbnailUrl: record.transaction_reports.thumbnail_url,
-        reportData: record.transaction_reports.report_data
-      } : undefined
-    }));
+
     
     return NextResponse.json({
       success: true,
-      videos: formattedVideos
+      videos: data
     });
   } catch (error: unknown) {
     const errorMessage = error instanceof Error 

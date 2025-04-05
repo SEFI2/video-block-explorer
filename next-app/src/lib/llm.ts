@@ -104,9 +104,9 @@ export function splitTransactionsByTime(
 }
 
 export async function generateTransactionReport(
-    prompt: string,
+    prompt: string | undefined,
     durationInDays: number,
-    transactions: Transaction[]
+    transactions: Transaction[],
 ): Promise<{
     intro_text: string;
     transaction_reports: TransactionReport[];

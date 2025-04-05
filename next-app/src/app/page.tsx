@@ -14,9 +14,7 @@ import { useWeb3 } from '../contexts/Web3Context';
 type ActivityType = 
   | 'transactions' 
   | 'nft' 
-  | 'contracts' 
-  | 'defi'
-  | 'all';
+  | 'tokens' ;
 
 const VideoGenerationForm: React.FC = () => {
   const [dataDuration, setDataDuration] = useState<number>(7);
@@ -80,8 +78,8 @@ const VideoGenerationForm: React.FC = () => {
         return `Analyze and visualize Ethereum transaction history for the ${dataDuration}, focusing on ETH transfers, frequency patterns, and significant transactions.`;
       case 'nft':
         return `Create a visual representation of NFT activity for the ${dataDuration}, highlighting collections, purchases, sales, and overall NFT engagement.`;
-      case 'contracts':
-        return `Visualize smart contract interactions for the ${dataDuration}, showcasing dapps used, contract calls, and protocol engagement.`;
+      case 'tokens':
+        return `Visualize token interactions for the ${dataDuration}, showcasing token purchases, sales, and overall token engagement.`;
     }
     return '';
   };
@@ -90,7 +88,8 @@ const VideoGenerationForm: React.FC = () => {
   const requestVideoGeneration = async (
     duration: number,
     prompt: string,
-    address: string
+    address: string,
+    activityType: ActivityType
   ): Promise<{ success: boolean; videoId?: string; error?: string }> => {
     try {
       const response = await fetch('/api/video/generate', {
@@ -101,12 +100,13 @@ const VideoGenerationForm: React.FC = () => {
         body: JSON.stringify({
           duration,
           prompt,
-          address,
-          report_address: address,
+          address: account?.toLowerCase() || address.toLowerCase(),
+          report_address: address.toLowerCase(),
           chain_id: 42220,
           network_name: 'Celo Network',
           balance: '1000',
           transaction_count: 100,
+          activity_type: activityType
         }),
       });
 
@@ -148,12 +148,10 @@ const VideoGenerationForm: React.FC = () => {
       return;
     }
        
-    // Get the appropriate data prompt
-    const dataPrompt = generateDataPrompt();
     
     try {
       setIsLoading(true);
-      const result = await requestVideoGeneration(dataDuration, dataPrompt, addressToUse);
+      const result = await requestVideoGeneration(dataDuration, customPrompt, addressToUse, activityType);
       if (result.success && result.videoId) {
         // Redirect to status page with the video ID, using Next.js router
         router.push(`/video/${result.videoId}`);
@@ -177,7 +175,7 @@ const VideoGenerationForm: React.FC = () => {
         <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 p-6 md:p-8">
           <div className="text-center mb-8">
             <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-              Blockchain Activity Visualizer
+              Blockchain Activity Visualizer in Video Format
             </h1>
             <p className="text-gray-300 max-w-2xl mx-auto">
               Create a beautiful video visualization of your on-chain activity with just a few clicks
@@ -305,13 +303,7 @@ const VideoGenerationForm: React.FC = () => {
                   {formErrors.customPrompt}
                 </p>
               )}
-              <div className="flex mt-2 text-xs text-gray-400">
-                <FontAwesomeIcon icon={faInfoCircle} className="text-primary mt-1 mr-2 flex-shrink-0" />
-                <p>
-                  Optionally provide specific instructions on what data to analyze and visualize. 
-                  If left empty, we&apos;ll use a default prompt based on your selected activity type.
-                </p>
-              </div>
+
             </div>
             
             {/* Submit Button */}

@@ -179,7 +179,6 @@ const Navbar: React.FC = () => {
         
         const getNetworkName = () => {
           if (isLocalNetwork) return "Localhost";
-          if (isSepoliaNetwork) return "Sepolia Testnet";
           if (isAlfajoresNetwork) return "Alfajores Testnet";
           return chainId ? `Network ID: ${chainId}` : "Unknown Network";
         };
@@ -225,18 +224,20 @@ const Navbar: React.FC = () => {
                           : 'text-gray-300 hover:bg-white/5 hover:text-white'
                       }`}>
                         <FontAwesomeIcon icon={faFilm} className="mr-2" />
-                        Videos
+                        My Videos
                       </Link>
                     )}
                     
-                    <Link href="/mock-video" className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                      isActive('/mock-video')
-                        ? 'bg-purple-600/20 text-purple-400 shadow-[0_0_10px_rgba(147,51,234,0.2)]'
-                        : 'text-gray-300 hover:bg-white/5 hover:text-white'
-                    }`}>
-                      <FontAwesomeIcon icon={faFlask} className="mr-2" />
-                      Demo
-                    </Link>
+                    <Link href="/all-videos" className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
+                        isActive('/all-videos')
+                          ? 'bg-blue-600/20 text-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.2)]'
+                          : 'text-gray-300 hover:bg-white/5 hover:text-white'
+                      }`}>
+                        <FontAwesomeIcon icon={faFilm} className="mr-2" />
+                        All Videos
+                      </Link>
+                
+                
                   </div>
                   
                   {/* Right section - wallet */}

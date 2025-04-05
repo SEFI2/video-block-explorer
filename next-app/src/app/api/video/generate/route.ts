@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
 import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
-import { fetchAddressBlockchainData } from '@/lib/celo-api';
+import { fetchAddressBlockchainData, fetchNftTransfers, fetchTokenTransfers } from '@/lib/celo-api';
 
 import { generateTransactionReport } from '@/lib/llm';
 import { TransactionReport } from '@/types/report';
@@ -45,7 +45,7 @@ const getSupabaseAdmin = () => {
 
 // Request body schema definition
 const requestBodySchema = z.object({
-  prompt: z.string(),
+  prompt: z.string().optional(),
   duration: z.number(),
   address: z.string(),
   report_address: z.string(),
@@ -53,6 +53,7 @@ const requestBodySchema = z.object({
   network_name: z.string(),
   balance: z.string(),
   transaction_count: z.number(),
+  activity_type: z.string(),
 });
 
 // user_address TEXT NOT NULL,
@@ -144,14 +145,40 @@ export async function executeHandler(request: NextRequest) {
     return createErrorResponse('error', 400);
   }
 
-  const { prompt, duration, address, report_address, chain_id, network_name, balance, transaction_count } = result.data;
+  const {
+    activity_type,
+    prompt,
+    duration,
+    address,
+    report_address,
+    chain_id,
+    network_name,
+    transaction_count
+  } = result.data;
+
   console.log({result: result.data});
  
-  const blockchainData = await fetchAddressBlockchainData(address, duration);    
-  console.log({blockchainData});
+  let report;
+  let blockchainData;
+  if (activity_type === 'transactions') {
+    blockchainData = await fetchAddressBlockchainData(address, duration);    
+    console.log({blockchainData});
+    report = await generateTransactionReport(prompt, duration, blockchainData.transactions);
+    console.log({report});
+  } else if (activity_type === 'nft') {
+    blockchainData = await fetchNftTransfers(address, duration);
+    console.log({blockchainData});
+    report = await generateTransactionReport(prompt, duration, blockchainData.transactions);
+    console.log({report});
+  } else if (activity_type === 'tokens') {
+    blockchainData = await fetchTokenTransfers(address, duration);
+    console.log({blockchainData});
+    report = await generateTransactionReport(prompt, duration, blockchainData.transactions);
+    console.log({report});
+  } else {
+    throw new Error(`Invalid activity type: ${activity_type}`);
+  }
 
-    const report = await generateTransactionReport(prompt, duration, blockchainData.transactions);
-        console.log({report});
   // Create a unique request ID and prepare database entry
   const videoId = uuidv4();
       
@@ -161,7 +188,7 @@ export async function executeHandler(request: NextRequest) {
     videoId,
     address,
     report_address,
-    prompt,
+    prompt || 'General analysis',
     duration,
     'generating',
     chain_id,
@@ -180,6 +207,6 @@ export async function POST(request: NextRequest) {
     return await executeHandler(request);
   } catch (error) {
     console.error('Error executing handler:', error);
-    return createErrorResponse('Internal server error', 500);
+    return createErrorResponse(error instanceof Error ? `Error: ${error.message}` : 'Error: Unknown error', 500);
   }
 }
