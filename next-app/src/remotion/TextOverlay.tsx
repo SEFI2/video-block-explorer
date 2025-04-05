@@ -8,6 +8,9 @@ interface TextOverlayProps {
 export const TextOverlay: React.FC<TextOverlayProps> = ({ text }) => {
   const frame = useCurrentFrame();
   
+  // If text is empty or undefined, return null
+  if (!text) return null;
+  
   // Parse the text to extract meaningful sentences for the overlay
   const sentences = text
     .split(/\n|\./)

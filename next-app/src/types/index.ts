@@ -100,11 +100,6 @@ export interface Web3ContextType {
   currentVideoStatus: VideoStatus | string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => Promise<void>;
-  requestVideoGeneration: (dataDuration: string, dataPrompt: string, targetAddress?: string) => Promise<VideoGenerationResponse>;
-  requestRefund: (videoId: string) => Promise<RefundResponse>;
-  acknowledgeVideo: (videoId: string) => Promise<AcknowledgeResponse>;
-  getVideoStatus: (videoId: string) => Promise<VideoStatus | number | null>;
-  switchToAlfajoresNetwork?: () => Promise<boolean>;
 }
 
 export interface VideoRequest {

@@ -16,7 +16,7 @@ const Footer: React.FC = () => (
       <div className="flex flex-col md:flex-row justify-between items-center gap-3">
         <div className="flex items-center">
           <FontAwesomeIcon icon={faCopyright} className="mr-2 neon-text" />
-          <p>© 2023 <span className="neon-text">Blockchain Video Generator</span> | All rights reserved</p>
+          <p>© 2023 <span className="neon-text">Blockchain Video Explorer</span> | All rights reserved</p>
         </div>
         <div>
           <p className="flex items-center">

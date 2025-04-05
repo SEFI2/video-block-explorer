@@ -18,10 +18,6 @@ const defaultContext: Web3ContextType = {
   currentVideoStatus: null,
   connectWallet: async () => {},
   disconnectWallet: async () => {},
-  requestVideoGeneration: async () => ({ success: false, error: 'SSR Mode' }),
-  requestRefund: async () => ({ success: false, error: 'SSR Mode' }),
-  acknowledgeVideo: async () => ({ success: false, error: 'SSR Mode' }),
-  getVideoStatus: async () => null
 };
 
 // Initialize the MetaMask connector

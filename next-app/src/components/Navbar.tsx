@@ -200,7 +200,7 @@ const Navbar: React.FC = () => {
                         <div className="absolute inset-0 bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                       </div>
                       <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-indigo-400 group-hover:from-indigo-400 group-hover:to-purple-400 transition-all duration-300">
-                        Video Generator
+                        Blockchain Video Explorer
                       </span>
                     </Link>
                     
