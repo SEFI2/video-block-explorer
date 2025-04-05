@@ -21,7 +21,7 @@ async function main() {
   try {
     await run("verify:verify", {
       address: contractAddress,
-      network: "alfajores",
+      network: "celo",
       constructorArguments: []
     });
     console.log("Contract verification successful!");
