@@ -216,6 +216,8 @@ export const getBlockchainProfile = () => {
     chainId: 1, // Ethereum Mainnet
     networkName: 'Ethereum Mainnet',
     tokenBalance: '5.43',
+    introText: 'This is the intro text',
+    outroText: 'This is the outro text',
     transactionCount: period1Count + period2Count + period3Count,
     reports,
     generatedText: generateSummaryText(reports)

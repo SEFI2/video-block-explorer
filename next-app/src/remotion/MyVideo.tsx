@@ -40,7 +40,7 @@ export const VideoPreview: React.FC<{props: VideoTransactionProps}> = ({props}) 
     <AbsoluteFill style={{ backgroundColor: '#0f172a' }}>
       {/* Use Remotion's built-in Series instead of TransitionSeries */}
       <Series>
-        <Series.Sequence durationInFrames={5 * videoConfig.fps}>
+        <Series.Sequence durationInFrames={3 * videoConfig.fps}>
           <IntroScene userAddress={props.userAddress} introText={props.introText} />
         </Series.Sequence>
         
@@ -165,7 +165,8 @@ const ReportScene: React.FC<{
       background: 'linear-gradient(135deg, #0A1429 0%, #111D36 100%)',
       fontFamily: 'Inter, system-ui, sans-serif',
       color: 'white',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      padding: '5rem 2.5rem 2rem'
     }}>
       {/* Background Elements */}
       <div style={{
@@ -174,18 +175,18 @@ const ReportScene: React.FC<{
         left: 0,
         right: 0,
         bottom: 0,
-        background: 'radial-gradient(circle at 70% 30%, rgba(114, 63, 255, 0.1) 0%, rgba(0, 0, 0, 0) 50%)',
+        background: 'radial-gradient(circle at 70% 20%, rgba(114, 63, 255, 0.2) 0%, rgba(0, 0, 0, 0) 60%)',
         zIndex: 0
       }} />
       
       <div style={{
         position: 'absolute',
-        top: '-20%',
+        top: '-5%',
         right: '-10%',
-        width: '40%',
-        height: '40%',
+        width: '60%',
+        height: '60%',
         borderRadius: '50%',
-        background: 'radial-gradient(circle, rgba(65, 120, 255, 0.1) 0%, rgba(0, 0, 0, 0) 70%)',
+        background: 'radial-gradient(circle, rgba(65, 120, 255, 0.2) 0%, rgba(0, 0, 0, 0) 70%)',
         filter: 'blur(60px)',
         zIndex: 0
       }} />
@@ -197,26 +198,40 @@ const ReportScene: React.FC<{
         left: 0,
         right: 0,
         bottom: 0,
-        backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px)',
+        backgroundImage: 'linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px), linear-gradient(90deg, rgba(255, 255, 255, 0.05) 1px, transparent 1px)',
         backgroundSize: '40px 40px',
         zIndex: 0
+      }} />
+      
+      {/* Extra glow effect at top */}
+      <div style={{
+        position: 'absolute',
+        top: '5%',
+        left: '50%',
+        width: '30%',
+        height: '20%',
+        borderRadius: '50%',
+        background: 'radial-gradient(circle, rgba(114, 163, 255, 0.25) 0%, rgba(0, 0, 0, 0) 70%)',
+        filter: 'blur(40px)',
+        zIndex: 0,
+        transform: 'translateX(-50%)'
       }} />
       
       {/* Content Container */}
       <div style={{
         position: 'relative',
         zIndex: 1,
-        padding: '2.5rem',
         height: '100%',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        transform: 'translateY(-2.5rem) scale(0.9) translateX(0%)'
       }}>
         {/* Header Section */}
         <div style={{
           display: 'flex',
           justifyContent: 'space-between',
           alignItems: 'flex-start',
-          marginBottom: '1.5rem',
+          marginBottom: '1.75rem',
           opacity: titleOpacity,
           transform: `translateY(${titleY}px)`
         }}>
@@ -227,16 +242,17 @@ const ReportScene: React.FC<{
               marginBottom: '0.75rem'
             }}>
               <div style={{
-                width: '2rem',
-                height: '2rem',
+                width: '1.85rem',
+                height: '1.85rem',
                 borderRadius: '0.5rem',
                 background: 'linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%)',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
-                marginRight: '0.75rem'
+                marginRight: '0.6rem',
+                boxShadow: '0 4px 10px rgba(59, 130, 246, 0.3)'
               }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                   <path d="M12 8V12L15 15" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                   <path d="M12 22C17.5228 22 22 17.5228 22 12C22 6.47715 17.5228 2 12 2C6.47715 2 2 6.47715 2 12C2 17.5228 6.47715 22 12 22Z" stroke="white" strokeWidth="2"/>
                 </svg>
@@ -246,7 +262,8 @@ const ReportScene: React.FC<{
                 fontWeight: 700,
                 margin: 0,
                 color: 'white',
-                letterSpacing: '-0.02em'
+                letterSpacing: '-0.02em',
+                textShadow: '0 2px 8px rgba(0, 0, 0, 0.2)'
               }}>
                 Wallet Activity Report
               </h1>
@@ -256,7 +273,7 @@ const ReportScene: React.FC<{
               alignItems: 'center'
             }}>
               <p style={{
-                fontSize: '1.125rem',
+                fontSize: '1rem',
                 fontWeight: 500,
                 color: 'rgba(255, 255, 255, 0.7)',
                 margin: 0
@@ -266,22 +283,24 @@ const ReportScene: React.FC<{
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                background: 'rgba(59, 130, 246, 0.1)',
+                background: 'rgba(59, 130, 246, 0.15)',
                 borderRadius: '999px',
-                padding: '0.25rem 0.75rem',
-                marginLeft: '1rem'
+                padding: '0.3rem 0.8rem',
+                marginLeft: '1rem',
+                boxShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
               }}>
                 <div style={{
                   width: '0.5rem',
                   height: '0.5rem',
                   borderRadius: '50%',
-                  backgroundColor: '#3B82F6',
-                  marginRight: '0.5rem'
+                  backgroundColor: '#4F8FF6',
+                  marginRight: '0.5rem',
+                  boxShadow: '0 0 5px rgba(59, 130, 246, 0.5)'
                 }} />
                 <span style={{
                   fontSize: '0.75rem',
                   fontWeight: 600,
-                  color: '#3B82F6'
+                  color: '#4F8FF6'
                 }}>
                   LIVE
                 </span>
@@ -292,11 +311,12 @@ const ReportScene: React.FC<{
           <div style={{
             display: 'flex',
             alignItems: 'center',
-            background: 'rgba(255, 255, 255, 0.03)',
+            background: 'rgba(255, 255, 255, 0.05)',
             backdropFilter: 'blur(10px)',
             borderRadius: '0.75rem',
             padding: '0.5rem 1rem',
-            border: '1px solid rgba(255, 255, 255, 0.05)'
+            border: '1px solid rgba(255, 255, 255, 0.08)',
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0.15)'
           }}>
             <div style={{
               width: '2rem',
@@ -306,7 +326,8 @@ const ReportScene: React.FC<{
               marginRight: '0.75rem',
               display: 'flex',
               alignItems: 'center',
-              justifyContent: 'center'
+              justifyContent: 'center',
+              boxShadow: '0 2px 6px rgba(59, 130, 246, 0.3)'
             }}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
                 <path d="M9 20H7C5.89543 20 5 19.1046 5 18V6C5 4.89543 5.89543 4 7 4H17C18.1046 4 19 4.89543 19 6V18C19 19.1046 18.1046 20 17 20H15M9 20V14M9 20H15M15 20V14M15 14H9M13 4L12 2L11 4H13Z" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
@@ -319,7 +340,7 @@ const ReportScene: React.FC<{
                 color: 'rgba(255, 255, 255, 0.5)',
                 margin: 0
               }}>
-                Wallet Address
+                Wallet 
               </p>
               <p style={{
                 fontSize: '0.875rem',
@@ -327,7 +348,6 @@ const ReportScene: React.FC<{
                 margin: '0.125rem 0 0 0',
                 color: 'white'
               }}>
-                {report?.userAddress ? `${report.userAddress.substring(0, 6)}...${report.userAddress.substring(report.userAddress.length - 4)}` : '0x1234...5678'}
               </p>
             </div>
           </div>
@@ -337,23 +357,24 @@ const ReportScene: React.FC<{
         <div style={{
           display: 'grid',
           gridTemplateColumns: '1fr 1fr',
-          gap: '1.5rem',
-          flex: 1
+          gap: '1.75rem',
+          flex: 1,
+          maxHeight: '75vh'
         }}>
           {/* Left Column */}
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '1.5rem'
+            gap: '2rem'
           }}>
             {/* Key Highlights Card */}
             {report.highlights && report.highlights.length > 0 && (
               <div style={{
-                background: 'rgba(16, 28, 56, 0.6)',
+                background: 'rgba(16, 28, 56, 0.7)',
                 borderRadius: '1rem',
-                border: '1px solid rgba(255, 255, 255, 0.05)',
-                padding: '1.5rem',
-                boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                border: '1px solid rgba(255, 255, 255, 0.08)',
+                padding: '1.25rem',
+                boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                 backdropFilter: 'blur(10px)',
                 flex: 1,
                 display: 'flex',
@@ -406,7 +427,7 @@ const ReportScene: React.FC<{
                     margin: 0,
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '1.25rem'
+                    gap: '0.75rem'
                   }}>
                     {report.highlights.map((highlight, i) => (
                       <li 
@@ -446,44 +467,6 @@ const ReportScene: React.FC<{
                   </ul>
                 </div>
                 
-                {/* Educational annotation */}
-                {showAnnotations && (
-                  <div style={{
-                    marginTop: '1.5rem',
-                    padding: '0.875rem',
-                    borderRadius: '0.5rem',
-                    background: 'rgba(59, 130, 246, 0.05)',
-                    border: '1px solid rgba(59, 130, 246, 0.1)',
-                    opacity: annotationOpacity
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '0.5rem' }}>
-                        <circle cx="12" cy="12" r="10" stroke="#3B82F6" strokeWidth="2"/>
-                        <path d="M12 7V12" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
-                        <circle cx="12" cy="16" r="1" fill="#3B82F6"/>
-                      </svg>
-                      <span style={{
-                        fontSize: '0.875rem',
-                        fontWeight: 600,
-                        color: '#3B82F6'
-                      }}>
-                        Why This Matters
-                      </span>
-                    </div>
-                    <p style={{
-                      fontSize: '0.8125rem',
-                      lineHeight: 1.5,
-                      margin: 0,
-                      color: 'rgba(255, 255, 255, 0.7)'
-                    }}>
-                      These key activities represent significant patterns in your wallet behavior that impact your overall portfolio performance.
-                    </p>
-                  </div>
-                )}
               </div>
             )}
           </div>
@@ -492,17 +475,17 @@ const ReportScene: React.FC<{
           <div style={{
             display: 'flex',
             flexDirection: 'column',
-            gap: '1.5rem'
+            gap: '2rem'
           }}>
             {report.statistics && (
               <>
                 {/* Total Value Stat */}
                 <div style={{
-                  background: 'rgba(16, 28, 56, 0.6)',
+                  background: 'rgba(16, 28, 56, 0.7)',
                   borderRadius: '1rem',
-                  border: '1px solid rgba(255, 255, 255, 0.05)',
-                  padding: '1.5rem',
-                  boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                  border: '1px solid rgba(255, 255, 255, 0.08)',
+                  padding: '1.25rem',
+                  boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                   backdropFilter: 'blur(10px)',
                   opacity: interpolate(frame - (TITLE_DURATION + CARD_STAGGER), [0, 10], [0, 1], { extrapolateRight: 'clamp' }),
                   transform: `translateX(${interpolate(frame - (TITLE_DURATION + CARD_STAGGER), [0, 15], [20, 0], { extrapolateRight: 'clamp' })}px)`
@@ -525,7 +508,7 @@ const ReportScene: React.FC<{
                         Total Value
                       </p>
                       <h3 style={{
-                        fontSize: '2rem',
+                        fontSize: '1.75rem',
                         fontWeight: 700,
                         margin: '0.5rem 0 0 0',
                         color: 'white',
@@ -599,15 +582,15 @@ const ReportScene: React.FC<{
                 <div style={{
                   display: 'grid',
                   gridTemplateColumns: '1fr 1fr',
-                  gap: '1.5rem'
+                  gap: '2rem'
                 }}>
                   {/* Unique Addresses */}
                   <div style={{
-                    background: 'rgba(16, 28, 56, 0.6)',
+                    background: 'rgba(16, 28, 56, 0.7)',
                     borderRadius: '1rem',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    padding: '1.25rem',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                     backdropFilter: 'blur(10px)',
                     opacity: interpolate(frame - (TITLE_DURATION + CARD_STAGGER + STATS_STAGGER), [0, 10], [0, 1], { extrapolateRight: 'clamp' }),
                     transform: `translateY(${interpolate(frame - (TITLE_DURATION + CARD_STAGGER + STATS_STAGGER), [0, 15], [20, 0], { extrapolateRight: 'clamp' })}px)`
@@ -623,10 +606,11 @@ const ReportScene: React.FC<{
                       Unique Addresses
                     </p>
                     <h3 style={{
-                      fontSize: '2rem',
+                      fontSize: '1.75rem',
                       fontWeight: 700,
-                      margin: '0.5rem 0 0.75rem 0',
-                      color: 'white'
+                      margin: '0.5rem 0 0 0',
+                      color: 'white',
+                      letterSpacing: '-0.02em'
                     }}>
                       {animateNumber(report.statistics.uniqueAddresses, STATS_STAGGER)}
                     </h3>
@@ -688,11 +672,11 @@ const ReportScene: React.FC<{
                   
                   {/* Significant Transactions */}
                   <div style={{
-                    background: 'rgba(16, 28, 56, 0.6)',
+                    background: 'rgba(16, 28, 56, 0.7)',
                     borderRadius: '1rem',
-                    border: '1px solid rgba(255, 255, 255, 0.05)',
-                    padding: '1.5rem',
-                    boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(255, 255, 255, 0.08)',
+                    padding: '1.25rem',
+                    boxShadow: '0 8px 24px rgba(0, 0, 0, 0.15)',
                     backdropFilter: 'blur(10px)',
                     opacity: interpolate(frame - (TITLE_DURATION + CARD_STAGGER + STATS_STAGGER*2), [0, 10], [0, 1], { extrapolateRight: 'clamp' }),
                     transform: `translateY(${interpolate(frame - (TITLE_DURATION + CARD_STAGGER + STATS_STAGGER*2), [0, 15], [20, 0], { extrapolateRight: 'clamp' })}px)`
@@ -708,10 +692,11 @@ const ReportScene: React.FC<{
                       Significant TXs
                     </p>
                     <h3 style={{
-                      fontSize: '2rem',
+                      fontSize: '1.75rem',
                       fontWeight: 700,
-                      margin: '0.5rem 0 0.75rem 0',
-                      color: 'white'
+                      margin: '0.5rem 0 0 0',
+                      color: 'white',
+                      letterSpacing: '-0.02em'
                     }}>
                       {animateNumber(report.statistics.significantTransactions, STATS_STAGGER*2)}
                     </h3>
@@ -746,24 +731,7 @@ const ReportScene: React.FC<{
                     border: '1px solid rgba(139, 92, 246, 0.1)',
                     opacity: annotationOpacity
                   }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      marginBottom: '0.5rem'
-                    }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '0.5rem' }}>
-                        <circle cx="12" cy="12" r="10" stroke="#8B5CF6" strokeWidth="2"/>
-                        <path d="M12 7V12" stroke="#8B5CF6" strokeWidth="2" strokeLinecap="round"/>
-                        <circle cx="12" cy="16" r="1" fill="#8B5CF6"/>
-                      </svg>
-                      <span style={{
-                        fontSize: '0.875rem',
-                        fontWeight: 600,
-                        color: '#8B5CF6'
-                      }}>
-                        Understanding These Numbers
-                      </span>
-                    </div>
+           
                     <p style={{
                       fontSize: '0.8125rem',
                       lineHeight: 1.5,
@@ -783,100 +751,102 @@ const ReportScene: React.FC<{
         {report.text && (
           <div style={{
             marginTop: '1.5rem',
-            opacity: interpolate(frame - (TITLE_DURATION + CARD_STAGGER + 50), [0, 20], [0, 1], { extrapolateRight: 'clamp' }),
-            transform: `translateY(${interpolate(frame - (TITLE_DURATION + CARD_STAGGER + 50), [0, 20], [20, 0], { extrapolateRight: 'clamp' })}px)`
+            opacity: interpolate(frame - (TITLE_DURATION + CARD_STAGGER + 30), [0, 20], [0, 1], { extrapolateRight: 'clamp' }),
+            transform: `translateY(${interpolate(frame - (TITLE_DURATION + CARD_STAGGER + 30), [0, 20], [20, 0], { extrapolateRight: 'clamp' })}px)`,
+            width: '94%',
+            marginLeft: '3%',
+            maxWidth: '1000px'
           }}>
             <div style={{
-              background: 'rgba(15, 23, 42, 0.6)',
+              background: 'linear-gradient(180deg, rgba(23, 37, 84, 0.8) 0%, rgba(30, 58, 138, 0.8) 100%)',
               borderRadius: '1rem',
-              border: '1px solid rgba(255, 255, 255, 0.05)',
-              padding: '1.25rem',
+              border: '1px solid rgba(96, 165, 250, 0.2)',
+              padding: '1.5rem',
               backdropFilter: 'blur(10px)',
-              boxShadow: '0 4px 20px rgba(0, 0, 0, 0.1)'
+              boxShadow: '0 8px 32px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(255, 255, 255, 0.05), 0 0 20px rgba(59, 130, 246, 0.15)',
+              position: 'relative',
+              overflow: 'hidden',
+              display: 'flex',
+              justifyContent: 'flex-start'
             }}>
+              {/* Decorative element */}
+              <div style={{
+                position: 'absolute',
+                top: '-50px',
+                right: '-50px',
+                width: '100px',
+                height: '100px',
+                borderRadius: '50%',
+                background: 'radial-gradient(circle, rgba(59, 130, 246, 0.2) 0%, rgba(0, 0, 0, 0) 70%)',
+                filter: 'blur(20px)',
+                zIndex: 0
+              }} />
+              
               <div style={{
                 display: 'flex',
-                alignItems: 'flex-start'
+                alignItems: 'flex-start',
+                position: 'relative',
+                zIndex: 1,
+                maxWidth: '95%',
+                paddingLeft: '2%'
               }}>
                 <div style={{
-                  width: '2rem',
-                  height: '2rem',
+                  width: '2.5rem',
+                  height: '2.5rem',
                   borderRadius: '50%',
                   display: 'flex',
                   alignItems: 'center',
                   justifyContent: 'center',
-                  background: 'rgba(59, 130, 246, 0.1)',
-                  marginRight: '0.75rem',
+                  background: 'linear-gradient(135deg, #3B82F6 0%, #60A5FA 100%)',
+                  marginRight: '1rem',
                   flexShrink: 0,
-                  marginTop: '0.125rem'
+                  boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)',
+                  border: '2px solid rgba(255, 255, 255, 0.1)'
                 }}>
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="12" cy="12" r="10" stroke="#3B82F6" strokeWidth="2"/>
-                    <path d="M12 7V12" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round"/>
-                    <circle cx="12" cy="16" r="1" fill="#3B82F6"/>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="12" cy="12" r="10" stroke="white" strokeWidth="2"/>
+                    <path d="M12 7V12" stroke="white" strokeWidth="2" strokeLinecap="round"/>
+                    <circle cx="12" cy="16" r="1" fill="white"/>
                   </svg>
                 </div>
                 <div>
+                  <h3 style={{
+                    fontSize: '1.125rem',
+                    fontWeight: 600,
+                    color: 'white',
+                    margin: '0 0 0.75rem 0',
+                    textShadow: '0 2px 4px rgba(0, 0, 0, 0.2)'
+                  }}>
+                    Analysis Summary
+                  </h3>
                   <p style={{
-                    fontSize: '1rem',
+                    fontSize: '1.125rem',
                     lineHeight: 1.6,
-                    color: 'rgba(255, 255, 255, 0.8)',
-                    margin: 0
+                    fontWeight: 500,
+                    color: 'white',
+                    margin: 0,
+                    textShadow: '0 1px 2px rgba(0, 0, 0, 0.1)'
                   }}>
                     {report.text}
                   </p>
-                  
-                  <div style={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    marginTop: '1rem',
-                    padding: '0.75rem',
-                    borderRadius: '0.5rem',
-                    background: 'linear-gradient(to right, rgba(59, 130, 246, 0.05), rgba(139, 92, 246, 0.05))',
-                    border: '1px solid rgba(59, 130, 246, 0.1)'
-                  }}>
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" style={{ marginRight: '0.75rem', flexShrink: 0 }}>
-                      <path d="M12 16V12M12 8H12.01M22 12C22 17.5228 17.5228 22 12 22C6.47715 22 2 17.5228 2 12C2 6.47715 6.47715 2 12 2C17.5228 2 22 6.47715 22 12Z" stroke="#3B82F6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                    </svg>
-                    <span style={{
-                      fontSize: '0.875rem',
-                      lineHeight: 1.5,
-                      color: 'rgba(255, 255, 255, 0.7)'
-                    }}>
-                      Consider reviewing your transaction patterns and optimizing gas usage for better portfolio management.
-                    </span>
-                  </div>
                 </div>
               </div>
+              
+              {/* Decorative bottom accent */}
+              <div style={{
+                position: 'absolute',
+                bottom: '0',
+                left: '0',
+                width: '100%',
+                height: '4px',
+                background: 'linear-gradient(90deg, #3B82F6 0%, #8B5CF6 50%, #3B82F6 100%)',
+                zIndex: 0,
+                opacity: 0.8
+              }} />
             </div>
           </div>
         )}
-        
-        {/* Branding Watermark */}
-        <div style={{
-          position: 'absolute',
-          right: '1.5rem',
-          bottom: '1rem',
-          display: 'flex',
-          alignItems: 'center',
-          opacity: 0.5
-        }}>
-          <div style={{
-            width: '0.5rem',
-            height: '0.5rem',
-            borderRadius: '50%',
-            background: 'rgba(59, 130, 246, 0.7)',
-            marginRight: '0.5rem'
-          }} />
-          <span style={{
-            fontSize: '0.75rem',
-            fontWeight: 500,
-            color: 'rgba(255, 255, 255, 0.7)',
-            letterSpacing: '0.05em'
-          }}>
-            Wallet Insights • Period {index + 1}
-          </span>
-        </div>
+
       </div>
     </AbsoluteFill>
   );

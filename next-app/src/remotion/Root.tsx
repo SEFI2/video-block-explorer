@@ -18,6 +18,8 @@ export const CompositionProps = z.object({
     networkName: z.string(),
     balance: z.string(),
     transactionCount: z.number(),
+    introText: z.string(),
+    outroText: z.string(),
     reports: z.array(
         z.object({
         transactions: z.array(z.any()),
@@ -42,9 +44,10 @@ const calculateMetadata: CalculateMetadataFunction<
   z.infer<typeof CompositionProps>
 > = ({ props }) => {
   return {
-    durationInFrames: FPS * 20,
-    width: 1280,
-    height: 720,
+    durationInFrames: 
+        FPS * (/* Intro */3 + /* Reports */5 * props.props.reports.length + /* Outro */5),
+    width: VIDEO_WIDTH,
+    height: VIDEO_HEIGHT,
     props: props,
   };
 };

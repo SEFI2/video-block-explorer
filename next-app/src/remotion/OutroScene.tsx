@@ -119,40 +119,7 @@ export const OutroScene: React.FC<OutroSceneProps> = ({ userAddress, outroText }
           </ul>
         </div>
       </div>
-      
-      <div
-        style={{
-          opacity: logoOpacity,
-          transform: `scale(${logoScale})`,
-          position: 'absolute',
-          bottom: 50,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-        }}
-      >
-        <div
-          style={{
-            fontSize: 40,
-            fontWeight: 'bold',
-            background: 'linear-gradient(135deg, #60a5fa 0%, #3b82f6 50%, #2563eb 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            textShadow: '0 0 10px rgba(59, 130, 246, 0.3)',
-            marginBottom: 10,
-          }}
-        >
-          Blockchain Analytics
-        </div>
-        <div
-          style={{
-            fontSize: 18,
-            color: '#94a3b8',
-          }}
-        >
-          Powered by Blockchain Technology
-        </div>
-      </div>
+
     </AbsoluteFill>
   );
 }; 

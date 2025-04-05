@@ -31,7 +31,12 @@ interface VideoDetails {
 
 // Get ABI from constants
 const VideoReportNFT_ABI = CONTRACT_ABIS.VideoReportNFT;
-
+import {
+  FPS,
+  DURATION_IN_FRAMES,
+  VIDEO_WIDTH,
+  VIDEO_HEIGHT
+} from '@/remotion/config';
 // NFT contract address from environment variables
 
 export function VideoStatusPage({ videoId }: { videoId: string }) {
@@ -49,7 +54,7 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
   const router = useRouter();
   const { account, library, active, connectWallet } = useWeb3();
   const ALFAJORES_CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_ALFAJORES_CONTRACT_ADDRESS || '';
-
+  
   console.log({ ALFAJORES_CONTRACT_ADDRESS });
 
   useEffect(() => {
@@ -335,30 +340,33 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[calc(100vh-80px)] px-4 py-8">
-      <div className="w-full max-w-5xl animate-slide-up backdrop-blur-md rounded-2xl overflow-hidden border border-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] shadow-primary/5">
-        <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 p-6 md:p-8">
-          <div className="text-center mb-6">
-            <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+    <div className="flex flex-col items-center justify-start min-h-[calc(100vh-80px)] px-4 py-4 pt-2">
+      <div className="w-full max-w-5xl animate-slide-up backdrop-blur-md rounded-2xl overflow-hidden border border-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] shadow-primary/5 mt-0">
+        <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 p-4 md:p-6">
+          <div className="text-center mb-4">
+            <h1 className="text-xl md:text-2xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
               {videoDetails.network_name} Activity Report
             </h1>
-            <span className={`inline-block px-3 py-1 rounded-full text-sm font-semibold ${getStatusColor(videoDetails.status)}`}>
+            <span className={`inline-block px-2 py-0.5 rounded-full text-xs font-semibold ${getStatusColor(videoDetails.status)}`}>
               {videoDetails.status.toUpperCase()}
             </span>
           </div>
           
           {/* Video Player */}
-          <div className="rounded-xl overflow-hidden shadow-xl mb-8">
+          <div className="rounded-xl overflow-hidden shadow-xl mb-12">
             <Player
               component={VideoPreview}
               inputProps={inputProps}
-              durationInFrames={20 * 30}
-              fps={30}
-              compositionWidth={1280}
-              compositionHeight={720}
+              durationInFrames={3 * FPS + 5 * videoDetails.transaction_reports.length * FPS + 5 * FPS}
+              fps={FPS}
+              compositionWidth={VIDEO_WIDTH}
+              compositionHeight={VIDEO_HEIGHT}
               controls
               style={{ 
                 width: '100%',
+                height: 'auto',
+                aspectRatio: `${VIDEO_WIDTH}/${VIDEO_HEIGHT}`,
+                maxWidth: '100%',
                 borderRadius: '0.75rem'
               }}
               acknowledgeRemotionLicense={true}
@@ -367,7 +375,7 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
 
           {/* Render URL or Error Display */}
           {renderUrl && (
-            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+            <div className="mb-4 p-3 bg-green-100 border border-green-400 text-green-700 rounded text-sm">
               <p className="font-medium">Render completed successfully!</p>
               <a 
                 href={renderUrl} 
@@ -381,22 +389,22 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
           )}
           
           {renderError && (
-            <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+            <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded text-sm">
               <p className="font-medium">Render failed</p>
               <p>{renderError}</p>
             </div>
           )}
 
           {/* Video Ownership Information */}
-          <div className="mt-6 p-4 bg-gray-800/50 rounded-lg border border-gray-700">
-            <h3 className="text-xl font-semibold mb-3 text-primary">Video Status</h3>
+          <div className="mt-4 p-3 bg-gray-800/50 rounded-lg border border-gray-700 text-sm">
+            <h3 className="text-lg font-semibold mb-2 text-primary">Video Status</h3>
             
             {/* Display owner and URI if they exist */}
             {videoDetails.video_owner && (
-              <div className="mb-3">
+              <div className="mb-2">
                 <p className="text-gray-300"><span className="font-medium">Owner:</span> {videoDetails.video_owner}</p>
                 {videoDetails.video_uri && (
-                  <p className="text-gray-300 mt-2">
+                  <p className="text-gray-300 mt-1">
                     <span className="font-medium">Video URI:</span>{" "}
                     <a href={videoDetails.video_uri} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline break-all">
                       {videoDetails.video_uri}
@@ -407,13 +415,13 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
             )}
             
             {/* Always show minting status and button */}
-            <div className="mb-3">
+            <div className="mb-2">
               {!videoDetails.video_owner && (
-                <p className="text-yellow-400 mb-2">This video doesn&apos;t have an owner yet.</p>
+                <p className="text-yellow-400 mb-2 text-sm">This video doesn&apos;t have an owner yet.</p>
               )}
               
               {mintSuccess ? (
-                <div className="p-3 bg-green-800/30 border border-green-700 rounded-md text-green-300">
+                <div className="p-2 bg-green-800/30 border border-green-700 rounded-md text-green-300 text-sm">
                   <p>NFT minted successfully!</p>
                   <div className="mt-2 space-y-1">
                     {txHash && (
@@ -425,7 +433,7 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
                           className="text-blue-400 hover:underline flex items-center"
                         >
                           View transaction on Celoscan
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </a>
@@ -440,7 +448,7 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
                           className="text-blue-400 hover:underline flex items-center"
                         >
                           View NFT on Celoscan
-                          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <svg xmlns="http://www.w3.org/2000/svg" className="h-3 w-3 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
                           </svg>
                         </a>
@@ -452,13 +460,13 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
                 <button 
                   onClick={handleMintNFT}
                   disabled={isMinting || !videoDetails.video_uri}
-                  className={`px-4 py-2 bg-gradient-to-r from-primary to-accent text-white rounded-md 
+                  className={`px-3 py-1.5 text-sm bg-gradient-to-r from-primary to-accent text-white rounded-md 
                     ${isMinting || !videoDetails.video_uri ? 'opacity-50 cursor-not-allowed' : 'hover:opacity-90'} 
                     transition-opacity flex items-center`}
                 >
                   {isMinting ? (
                     <>
-                      <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                       </svg>
@@ -469,23 +477,23 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
               )}
               
               {mintError && (
-                <div className="mt-2 p-2 bg-red-900/20 border border-red-800 rounded text-red-400 text-sm">
+                <div className="mt-2 p-2 bg-red-900/20 border border-red-800 rounded text-red-400 text-xs">
                   {mintError}
                 </div>
               )}
               
               {!videoDetails.video_uri && (
-                <div className="mt-2 text-amber-400 text-sm">
+                <div className="mt-2 text-amber-400 text-xs">
                   You need to render the video first before minting
                 </div>
               )}
             </div>
           </div>
 
-          <div className="flex justify-between mt-8">
+          <div className="flex justify-between mt-5 gap-2">
             <button 
               onClick={() => router.push('/my-videos')}
-              className="px-4 py-2 bg-gray-800 text-gray-200 rounded hover:bg-gray-700 transition-colors"
+              className="px-3 py-1.5 text-sm bg-gray-800 text-gray-200 rounded hover:bg-gray-700 transition-colors"
             >
               Back to My Videos
             </button>
@@ -493,11 +501,11 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
             <button 
               onClick={handleRenderVideo}
               disabled={renderLoading}
-              className={`px-4 py-2 ${renderLoading ? 'bg-blue-400' : 'bg-blue-600'} text-white rounded hover:bg-blue-700 transition-colors flex items-center`}
+              className={`px-3 py-1.5 text-sm ${renderLoading ? 'bg-blue-400' : 'bg-blue-600'} text-white rounded hover:bg-blue-700 transition-colors flex items-center`}
             >
               {renderLoading ? (
                 <>
-                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <svg className="animate-spin -ml-1 mr-2 h-3 w-3 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                     <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                     <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
