@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { v4 as uuidv4 } from 'uuid';
-import { createClient, PostgrestError } from '@supabase/supabase-js';
+import { createClient } from '@supabase/supabase-js';
 
 // Create a direct Supabase client instance for this API route
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
@@ -20,8 +20,7 @@ interface ScriptData {
 interface RequestBody {
   prompt: string;
   duration: string;
-  walletAddress: string;
-  activityType?: string;
+  address?: string;
 }
 
 // Function to get Supabase admin client
@@ -40,7 +39,7 @@ const getSupabaseAdmin = () => {
 };
 
 // Function to call LLM API to generate video script
-async function generateVideoScript(prompt: string, duration: string, activityType: string): Promise<ScriptData> {
+async function generateVideoScript(prompt: string, duration: string): Promise<ScriptData> {
   try {
     // This is a placeholder - implement actual LLM API call
     // For example, using OpenAI's API or another LLM service
@@ -50,7 +49,7 @@ async function generateVideoScript(prompt: string, duration: string, activityTyp
     
     // Return a mock video script for now
     return {
-      script: `Generated script based on prompt: "${prompt}" with duration: ${duration} for ${activityType} activity.`,
+      script: `Generated script based on prompt: "${prompt}" with duration: ${duration}.`,
       scenes: [
         { description: "Opening scene introducing the topic", duration: "10s" },
         { description: "Main content covering key points", duration: "30s" },
@@ -76,10 +75,10 @@ export async function POST(request: NextRequest) {
 
   try {
     const body = await request.json() as RequestBody;
-    const { prompt, duration, walletAddress, activityType } = body;
+    const { prompt, duration, address } = body;
     
     // Validate input
-    if (!prompt || !duration || !walletAddress) {
+    if (!prompt || !duration) {
       return NextResponse.json(
         { error: 'Missing required fields' },
         { status: 400 }
@@ -89,7 +88,7 @@ export async function POST(request: NextRequest) {
     // Generate video script using LLM
     let scriptData: ScriptData;
     try {
-      scriptData = await generateVideoScript(prompt, duration, activityType || 'default');
+      scriptData = await generateVideoScript(prompt, duration);
     } catch (scriptError) {
       const errorMessage = scriptError instanceof Error 
         ? scriptError.message 
@@ -105,31 +104,22 @@ export async function POST(request: NextRequest) {
     const videoId = uuidv4();
     const now = new Date().toISOString();
     
-    // Create mock transaction data (this would be real data in production)
-    const txData = {
-      timestamp: now,
-      type: 'video_generation',
-      status: 'processing'
-    };
-    
     // Save to database
     try {
       const { error } = await supabaseAdmin
         .from('video_requests')
         .insert({
           request_id: videoId,
-          user_address: walletAddress,
+          user_address: address || 'anonymous',
           prompt,
           duration,
-          deposit: '0', // No deposit required in this approach
           status: 'generating',
           request_timestamp: now,
-          tx_hash: '', // No blockchain tx hash in this approach
           generated_text: scriptData.script
         });
       
-      if (error) {
-        console.error('Database insert error:', error);
+      if (error && error.details) {
+        console.error('Database insert error:', error.details);
         throw error;
       }
       
@@ -137,57 +127,28 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ 
         success: true, 
         videoId,
-        txData,
         message: 'Video generation request received and being processed'
       });
     } catch (dbError) {
-      // Properly format database errors
-      let errorMessage = 'Database error';
-      
-      if (dbError instanceof PostgrestError) {
-        errorMessage += `: ${dbError.message}`;
-        if (dbError.details) {
-          errorMessage += ` - ${dbError.details}`;
-        }
-      } else if (dbError instanceof Error) {
-        errorMessage += `: ${dbError.message}`;
-      } else if (typeof dbError === 'object' && dbError !== null) {
-        // If no useful properties found, try to stringify the entire object
-        try {
-          errorMessage += `: ${JSON.stringify(dbError)}`;
-        } catch (err) {
-          errorMessage += `: (Cannot display detailed error information) ${err}`;
-        }
-      } else {
-        errorMessage += `: ${String(dbError)}`;
-      }
-      
       console.error('Database error:', dbError);
+      const errorMessage = dbError instanceof Error 
+        ? dbError.message 
+        : String(dbError);
+        
       return NextResponse.json(
-        { error: errorMessage },
+        { error: `Database error: ${errorMessage}` },
         { status: 500 }
       );
     }
   } catch (error) {
     // General error handling
-    let errorMessage = 'Failed to process video generation request';
-    
-    if (error instanceof Error) {
-      errorMessage += `: ${error.message}`;
-    } else if (error && typeof error === 'object') {
-      try {
-        errorMessage += `: ${JSON.stringify(error)}`;
-      } catch (err) {
-        // If error can't be stringified
-        errorMessage += ` (Cannot stringify error details: ${err})`;
-      }
-    } else if (error) {
-      errorMessage += `: ${String(error)}`;
-    }
-    
     console.error('Error processing video generation request:', error);
+    const errorMessage = error instanceof Error 
+      ? error.message 
+      : String(error);
+      
     return NextResponse.json(
-      { error: errorMessage },
+      { error: `Failed to process video generation request: ${errorMessage}` },
       { status: 500 }
     );
   }

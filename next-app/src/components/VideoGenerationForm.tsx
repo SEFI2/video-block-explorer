@@ -1,16 +1,14 @@
 'use client';
 
 import React, { useState, FormEvent } from 'react';
-import { useWeb3 } from '../contexts/Web3Context';
 import { useRouter } from 'next/navigation';
 import { FormErrorsState } from '../types';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { 
-  faClock, faComment, faInfoCircle, faWallet, 
+  faClock, faComment, faInfoCircle, 
   faVideoCamera, faSatelliteDish, faUser, faChevronDown, 
   faExchangeAlt, faImage, faFileContract, faLayerGroup, faChartLine
 } from '@fortawesome/free-solid-svg-icons';
-import { ethers } from 'ethers';
 
 type ActivityType = 
   | 'transactions' 
@@ -20,7 +18,6 @@ type ActivityType =
   | 'all';
 
 export const VideoGenerationForm: React.FC = () => {
-  const { account, active, requestVideoGeneration, isLoading, error } = useWeb3();
   const [dataDuration, setDataDuration] = useState<string>('last 30 days');
   const [activityType, setActivityType] = useState<ActivityType>('all');
   const [targetAddress, setTargetAddress] = useState<string>('');
@@ -28,6 +25,7 @@ export const VideoGenerationForm: React.FC = () => {
   const [customPrompt, setCustomPrompt] = useState<string>('');
   const [formErrors, setFormErrors] = useState<FormErrorsState>({});
   const [submissionError, setSubmissionError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
 
   // Duration options
@@ -101,30 +99,8 @@ export const VideoGenerationForm: React.FC = () => {
     
     // Validate target address if provided
     if (targetAddress) {
-      try {
-        // Use isAddress from ethers v5 or getAddress from ethers v6
-        if (typeof ethers.isAddress === 'function') {
-          // ethers v5
-          if (!ethers.isAddress(targetAddress)) {
-            errors.targetAddress = 'Invalid Ethereum address format';
-          }
-        } else if (typeof ethers.getAddress === 'function') {
-          // ethers v6
-          try {
-            ethers.getAddress(targetAddress); // Will throw if invalid
-          } catch {
-            errors.targetAddress = 'Invalid Ethereum address format';
-          }
-        } else {
-          // Fallback basic validation
-          if (!/^0x[a-fA-F0-9]{40}$/.test(targetAddress)) {
-            errors.targetAddress = 'Invalid Ethereum address format';
-          }
-        }
-      } catch (
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        _unused
-      ) {
+      // Basic Ethereum address validation
+      if (!/^0x[a-fA-F0-9]{40}$/.test(targetAddress)) {
         errors.targetAddress = 'Invalid Ethereum address format';
       }
     }
@@ -142,6 +118,44 @@ export const VideoGenerationForm: React.FC = () => {
     return Object.keys(errors).length === 0;
   };
 
+  // Function to request video generation via API
+  const requestVideoGeneration = async (
+    duration: string,
+    prompt: string,
+    address?: string
+  ): Promise<{ success: boolean; videoId?: string; error?: string }> => {
+    try {
+      const response = await fetch('/api/video/generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          duration,
+          prompt,
+          address: address || undefined,
+        }),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to generate video');
+      }
+      
+      return {
+        success: true,
+        videoId: data.videoId,
+      };
+    } catch (error) {
+      console.error('Error generating video:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'An unknown error occurred',
+      };
+    }
+  };
+
   const handleSubmit = async (e: FormEvent<HTMLFormElement>): Promise<void> => {
     e.preventDefault();
     
@@ -152,15 +166,11 @@ export const VideoGenerationForm: React.FC = () => {
       return;
     }
     
-    if (!active || !account) {
-      setSubmissionError('Please connect your wallet first');
-      return;
-    }
-    
     // Get the appropriate data prompt
     const dataPrompt = generateDataPrompt();
     
     try {
+      setIsLoading(true);
       const result = await requestVideoGeneration(dataDuration, dataPrompt, targetAddress || undefined);
       
       if (result.success && result.videoId) {
@@ -175,21 +185,13 @@ export const VideoGenerationForm: React.FC = () => {
       // Set error in state instead of showing alert
       const errorMessage = error instanceof Error ? error.message : 'Failed to submit request';
       setSubmissionError(errorMessage);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   return (
     <div className="card-gradient animate-slide-up p-4">
-      
-      {!active && (
-        <div className="card card-dark p-3 mb-4 glow-border">
-          <div className="flex items-center">
-            <FontAwesomeIcon icon={faWallet} className="mr-2" style={{color: 'var(--primary-light)'}} />
-            <span>Please connect your wallet to generate videos.</span>
-          </div>
-        </div>
-      )}
-      
       <form onSubmit={handleSubmit} className="glass p-4 rounded">
         <div className="form-group">
           <label htmlFor="dataDuration" className="form-label flex items-center glow-text">
@@ -225,7 +227,7 @@ export const VideoGenerationForm: React.FC = () => {
             value={targetAddress}
             onChange={(e) => setTargetAddress(e.target.value)}
             disabled={isLoading}
-            placeholder={account || "0x..."}
+            placeholder="0x..."
             className="form-input"
           />
           {formErrors.targetAddress && (
@@ -234,7 +236,7 @@ export const VideoGenerationForm: React.FC = () => {
             </p>
           )}
           <p className="text-sm mt-1" style={{color: 'var(--text-secondary)'}}>
-            Leave empty to use your connected wallet address, or enter another address to generate a video for it.
+            Enter an Ethereum address to generate a video for it.
           </p>
         </div>
         
@@ -313,8 +315,8 @@ export const VideoGenerationForm: React.FC = () => {
         <div className="flex justify-center mt-6">
           <button
             type="submit"
-            disabled={isLoading || !active}
-            className={`btn ${active ? 'btn-primary' : 'btn-secondary'} w-full max-w-md ${isLoading ? 'opacity-75' : ''}`}
+            disabled={isLoading}
+            className={`btn btn-primary w-full max-w-md ${isLoading ? 'opacity-75' : ''}`}
           >
             {isLoading ? (
               <>
@@ -338,23 +340,6 @@ export const VideoGenerationForm: React.FC = () => {
             </p>
           </div>
         )}
-        
-        {/* Keep existing error display for context errors */}
-        {error && !submissionError && (
-          <div className="mt-4 p-3 rounded" style={{backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)'}}>
-            <p className="text-sm" style={{color: 'var(--error)'}}>{error instanceof Error ? error.message : String(error)}</p>
-          </div>
-        )}
-        
-        <div className="mt-4">
-          <div className="flex items-start">
-            <FontAwesomeIcon icon={faInfoCircle} className="mr-2 mt-1 flex-shrink-0" style={{color: 'var(--primary-light)'}} />
-            <p className="text-sm" style={{color: 'var(--text-secondary)'}}>
-              Generating a video requires a small fee (0.01 ETH) to cover processing costs.
-              You can request a refund if you&apos;re not satisfied with the preview.
-            </p>
-          </div>
-        </div>
       </form>
     </div>
   );

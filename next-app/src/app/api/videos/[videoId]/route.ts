@@ -24,7 +24,7 @@ export async function GET(
   request: Request,
   { params }: { params: { videoId: string } }
 ) {
-  const videoId = params.videoId;
+  const videoId = await params.videoId;
   
   // Get Supabase admin client for this request
   const supabaseAdmin = getSupabaseAdmin();
