@@ -14,8 +14,6 @@ const defaultContext: Web3ContextType = {
   chainId: undefined,
   library: undefined,
   contracts: {},
-  videoRequests: [],
-  currentVideoStatus: null,
   connectWallet: async () => {},
   disconnectWallet: async () => {},
 };
@@ -57,12 +55,10 @@ const ClientWeb3Provider: React.FC<Web3ContextProviderProps> = ({ children }) =>
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
   const [contracts, setContracts] = useState<{
-    videoGenerator?: ethers.Contract;
+    videoReportNFT?: ethers.Contract;
     [key: string]: ethers.Contract | undefined;
   }>({});
   const [library, setLibrary] = useState<BrowserProvider | undefined>(undefined);
-  const [videoRequests] = useState<string[]>([]);
-  const [currentVideoStatus] = useState<string | null>(null);
   
   // Debug: Log connection state changes
   useEffect(() => {
@@ -110,7 +106,7 @@ const ClientWeb3Provider: React.FC<Web3ContextProviderProps> = ({ children }) =>
       const newChainId = parseInt(chainId, 16);
       setChainId(newChainId);
       
-      const isSupported = SUPPORTED_CHAINS.includes(newChainId);
+      const isSupported = SUPPORTED_CHAINS[newChainId];
       
       if (isSupported) {
         console.log(`Chain changed to supported network: ${newChainId}`);
@@ -225,19 +221,17 @@ const ClientWeb3Provider: React.FC<Web3ContextProviderProps> = ({ children }) =>
   const initializeContracts = (provider: BrowserProvider, signer: JsonRpcSigner) => {
     if (!chainId) return;
     
-    const chainIdStr = chainId.toString();
-    if (CONTRACT_ADDRESSES.VideoGenerator[chainIdStr]) {
-      const videoGeneratorContract = new Contract(
-        CONTRACT_ADDRESSES.VideoGenerator[chainIdStr],
-        CONTRACT_ABIS.VideoGenerator,
-        signer
-      );
+    const chainIdStr = parseInt(chainId.toString(), 10);
+    const videoReportNFTContract = new Contract(
+      CONTRACT_ADDRESSES[chainIdStr].videoReportNFT as string,
+      CONTRACT_ABIS.VideoReportNFT,
+      signer
+    );
       
       setContracts(prev => ({
         ...prev,
-        videoGenerator: videoGeneratorContract
+        videoReportNFT: videoReportNFTContract
       }));
-    }
   };
 
   // Connect to wallet - ensuring account selection dialog appears
@@ -278,7 +272,7 @@ const ClientWeb3Provider: React.FC<Web3ContextProviderProps> = ({ children }) =>
         
         // Get the current chainId
         const chainIdHex = await window.ethereum.request({ method: 'eth_chainId' });
-        const chainIdNum = parseInt(chainIdHex, 16);
+        const chainIdNum = parseInt(chainIdHex as string, 16);
         setChainId(chainIdNum);
         
         // Set active state
@@ -342,220 +336,6 @@ const ClientWeb3Provider: React.FC<Web3ContextProviderProps> = ({ children }) =>
     }
   };
 
-  // Request video generation function
-  const requestVideoGeneration = async (dataDuration: string, dataPrompt: string, targetAddress?: string) => {
-    try {
-      // First check if wallet is connected - still needed for authentication
-      if (!isActive) {
-        await connectWallet();
-        // If still not active after attempting to connect, throw error
-        if (!isActive) {
-          throw new Error('Wallet not connected. Please connect your wallet and try again.');
-        }
-      }
-      
-      const finalTargetAddress = targetAddress || account;
-      if (!finalTargetAddress) {
-        throw new Error('No target address specified');
-      }
-      
-      // Activity type - could be passed as a parameter in future
-      const activityType = "default"; 
-      
-      console.log('Sending video generation request to backend...', {
-        dataDuration,
-        dataPrompt,
-        finalTargetAddress,
-        activityType
-      });
-      
-      // Call backend API instead of smart contract
-      const response = await fetch('/api/generate-video', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          duration: dataDuration,
-          prompt: dataPrompt,
-          walletAddress: finalTargetAddress,
-          activityType: activityType
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        // Extract error message from response
-        const errorMessage = data?.error || `API request failed with status ${response.status}`;
-        console.error('Video generation API error:', errorMessage);
-        throw new Error(errorMessage);
-      }
-      
-      console.log('Backend response:', data);
-      
-      return {
-        success: true,
-        videoId: data.videoId,
-        txData: data.txData // Additional data from the backend
-      };
-    } catch (error) {
-      console.error('Error requesting video generation:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to request video generation'
-      };
-    }
-  };
-
-  // Request refund function
-  const requestRefund = async (videoId: string) => {
-    try {
-      if (!isActive) {
-        throw new Error('Wallet not connected');
-      }
-      
-      // Call backend API instead of smart contract
-      const response = await fetch(`/api/videos/${videoId}/refund`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress: account
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `API request failed with status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Refund response:', data);
-      
-      return {
-        success: true,
-        txData: data.txData
-      };
-    } catch (error) {
-      console.error('Error requesting refund:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to request refund'
-      };
-    }
-  };
-
-  // Acknowledge video function
-  const acknowledgeVideo = async (videoId: string) => {
-    try {
-      if (!isActive) {
-        throw new Error('Wallet not connected');
-      }
-      
-      // Call backend API instead of smart contract
-      const response = await fetch(`/api/videos/${videoId}/acknowledge`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          walletAddress: account
-        }),
-      });
-      
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `API request failed with status ${response.status}`);
-      }
-      
-      const data = await response.json();
-      console.log('Acknowledge response:', data);
-      
-      return {
-        success: true,
-        txData: data.txData
-      };
-    } catch (error) {
-      console.error('Error acknowledging video:', error);
-      return {
-        success: false,
-        error: error instanceof Error ? error.message : 'Failed to acknowledge video'
-      };
-    }
-  };
-
-  // Get video status function
-  const getVideoStatus = async (videoId: string): Promise<number | null> => {
-    try {
-      // Call backend API instead of smart contract
-      const response = await fetch(`/api/videos/${videoId}`);
-      
-      if (!response.ok) {
-        console.error(`Failed to get video status: ${response.status}`);
-        return null;
-      }
-      
-      const data = await response.json();
-      console.log('Video status response:', data);
-      
-      // Convert status string to number equivalent to match existing interface
-      const statusMap: {[key: string]: number} = {
-        'pending': 0,
-        'generating': 1,
-        'completed': 2,
-        'failed': 3,
-        'refunded': 4
-      };
-      
-      return data.video && data.video.status ? statusMap[data.video.status] || 0 : null;
-    } catch (error) {
-      console.error('Error getting video status:', error);
-      return null;
-    }
-  };
-
-  // Switch to Alfajores network
-  const switchToAlfajoresNetwork = async (): Promise<boolean> => {
-    if (typeof window === 'undefined' || !window.ethereum) return false;
-    
-    try {
-      await window.ethereum.request({
-        method: 'wallet_switchEthereumChain',
-        params: [{ chainId: '0xaef3' }], // Alfajores chain ID in hex
-      });
-      return true;
-    } catch (switchError: unknown) {
-      // This error code indicates that the chain has not been added to MetaMask
-      if (typeof switchError === 'object' && switchError !== null && 'code' in switchError && switchError.code === 4902) {
-        try {
-          await window.ethereum.request({
-            method: 'wallet_addEthereumChain',
-            params: [
-              {
-                chainId: '0xaef3', // Alfajores chain ID in hex
-                chainName: 'Alfajores Testnet',
-                nativeCurrency: {
-                  name: 'Celo',
-                  symbol: 'CELO',
-                  decimals: 18,
-                },
-                rpcUrls: ['https://alfajores-forno.celo-testnet.org'],
-                blockExplorerUrls: ['https://alfajores.celoscan.io/'],
-              },
-            ],
-          });
-          return true;
-        } catch (addError) {
-          console.error('Error adding Alfajores network to MetaMask:', addError);
-          return false;
-        }
-      }
-      console.error('Error switching to Alfajores network:', switchError);
-      return false;
-    }
-  };
   
   // Create the context value to provide
   const contextValue: Web3ContextType = {
@@ -566,15 +346,8 @@ const ClientWeb3Provider: React.FC<Web3ContextProviderProps> = ({ children }) =>
     chainId,
     library,
     contracts,
-    videoRequests,
-    currentVideoStatus,
     connectWallet,
     disconnectWallet,
-    requestVideoGeneration,
-    requestRefund,
-    acknowledgeVideo,
-    getVideoStatus,
-    switchToAlfajoresNetwork
   };
 
   return (

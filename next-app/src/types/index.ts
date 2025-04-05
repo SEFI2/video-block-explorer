@@ -36,9 +36,7 @@ export interface VideoData {
 
 // Contract interface
 export interface Contracts {
-  videoGenerator?: Contract;
-  marketplace?: Contract;
-  [key: string]: Contract | undefined;
+  videoReportNFT?: Contract;
 }
 
 // Form error state
@@ -97,8 +95,6 @@ export interface Web3ContextType {
   chainId?: number;
   library?: BrowserProvider;
   contracts: Contracts;
-  videoRequests: string[];
-  currentVideoStatus: VideoStatus | string | null;
   connectWallet: () => Promise<void>;
   disconnectWallet: () => Promise<void>;
 }
