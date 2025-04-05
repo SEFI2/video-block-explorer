@@ -5,48 +5,54 @@ import {
 } from '@/types/onchain';
 import { TransactionRangeReport, TransactionStatistics } from '@/types/report';
 import OpenAI from 'openai';
+import { z } from 'zod';
+import { zodResponseFormat } from 'openai/helpers/zod';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
     apiKey: process.env.OPENAI_API_KEY,
 });
 
-// Define the schema for the structured output
-const reportResponseSchema = {
-    type: "object",
-    properties: {
-        text: {
-            type: "string",
-            description: "The narrative text describing the transactions for the video"
-        },
-        highlights: {
-            type: "array",
-            items: {
-                type: "string"
-            },
-            description: "Key highlights or insights from the transactions"
-        },
-        statistics: {
-            type: "object",
-            properties: {
-                totalValue: {
-                    type: "string",
-                    description: "Total value of transactions in ETH"
-                },
-                uniqueAddresses: {
-                    type: "number",
-                    description: "Number of unique addresses involved"
-                },
-                significantTransactions: {
-                    type: "number",
-                    description: "Count of significant transactions"
-                }
-            },
-            required: ["totalValue", "uniqueAddresses", "significantTransactions"]
-        }
-    },
-    required: ["text", "highlights", "statistics"]
-};
+// Define schema for structured output using Zod
+const StatisticsSchema = z.object({
+    totalValue: z.string(),
+    uniqueAddresses: z.number(),
+    significantTransactions: z.number()
+});
+
+const TransactionSchema = z.object({
+    blockNumber: z.string(),
+    timeStamp: z.string(),
+    hash: z.string(),
+    nonce: z.string(),
+    blockHash: z.string(),
+    transactionIndex: z.string(),
+    from: z.string(),
+    to: z.string(),
+    value: z.string(),
+    gas: z.string(),
+    gasPrice: z.string(),
+    isError: z.string(),
+    txreceipt_status: z.string(),
+    input: z.string(),
+    contractAddress: z.string(),
+    cumulativeGasUsed: z.string(),
+    gasUsed: z.string(),
+    confirmations: z.string(),
+    methodId: z.string(),
+    functionName: z.string()
+});
+
+const TransactionReportSchema = z.object({
+    text: z.string(),
+    highlights: z.array(z.string()),
+    statistics: StatisticsSchema,
+    transactions: z.array(TransactionSchema)
+});
+
+const TransactionReportsSchema = z.object({
+    transaction_reports: z.array(TransactionReportSchema)
+});
 
 /**
  * Splits transactions into time periods based on timestamp
@@ -95,52 +101,13 @@ export function splitTransactionsByTime(
     return transactionGroups.filter(group => group.length > 0);
 }
 
-// Generate multiple transaction reports for different time ranges
-export async function generateMultipleReports(
+export async function generateTransactionReport(
     prompt: string,
-    transactions: Transaction[],
-    numberOfPeriods: number
+    transactions: Transaction[]
 ): Promise<TransactionRangeReport[]> {
-    // Split transactions into time periods
-    const transactionGroups = splitTransactionsByTime(transactions, numberOfPeriods);
-    
-    // Generate reports for each group
-    const reports = await Promise.all(
-        transactionGroups.map(txGroup => generateVideoScript(prompt, txGroup))
-    );
-    
-    return reports;
-}
 
-export async function generateVideoScript(
-    prompt: string,
-    transactions: Transaction[]): Promise<TransactionRangeReport> {
-    // Prepare transaction data for OpenAI
-    const transactionData = transactions.map(tx => ({
-        hash: tx.hash,
-        from: tx.from,
-        to: tx.to,
-        value: tx.value,
-        timeStamp: tx.timeStamp,
-        functionName: tx.functionName || 'Unknown operation'
-    }));
-
-    // Create structured output prompt
-    const structuredOutputPrompt = `
-You must respond with a JSON object that conforms to this schema:
-\`\`\`json
-${JSON.stringify(reportResponseSchema, null, 2)}
-\`\`\`
-`;
-
-    // Make the API call to OpenAI with structured output instructions
-    const response = await openai.chat.completions.create({
-        model: "gpt-o3-mini",
-        response_format: { type: "json_object" },
-        messages: [
-            { 
-                role: "system", 
-                content: `You are an AI that analyzes blockchain transaction data and generates insightful reports.
+    // Create system message with instructions for structure
+    const systemMessage = `You are an AI that analyzes blockchain transaction data and generates insightful reports.
 
 Analysis guidelines:
 1. Identify patterns in transaction behavior
@@ -150,33 +117,34 @@ Analysis guidelines:
 5. Summarize the time period's activity in a concise narrative
 
 Your analysis should be factual, informative, and engaging for a video narration.
-${structuredOutputPrompt}`
-            },
+
+For each transaction report, respond with a valid JSON object with these properties:
+- text: A narrative description of the transactions for the video
+- transactions: Selected transactions that are relevant to the analysis report
+- highlights: An array of key insights from the transactions
+- statistics: An object containing totalValue (string), uniqueAddresses (number), and significantTransactions (number)`;
+
+    // Make the API call to OpenAI with JSON response format
+    const response = await openai.beta.chat.completions.parse({
+        model: "o3-mini",
+        response_format: zodResponseFormat(TransactionReportsSchema, 'transaction_reports'),
+        messages: [
+            { role: "system", content: systemMessage },
             { 
                 role: "user", 
                 content: `Analyze these blockchain transactions and generate a report based on this prompt: "${prompt}".
                 
 These transactions occurred between ${new Date(parseInt(transactions[0]?.timeStamp || '0') * 1000).toISOString()} and ${new Date(parseInt(transactions[transactions.length-1]?.timeStamp || '0') * 1000).toISOString()}.
 
-Here are the transactions: ${JSON.stringify(transactionData)}` 
+Here are the transactions: ${JSON.stringify(transactions)}` 
             }
         ],
     });
 
-    // Parse the response
-    const content = response.choices[0].message.content;
-    if (!content) {
-        throw new Error("Empty response from OpenAI");
-    }
-
-    const parsedContent = JSON.parse(content);
+    // Extract and parse the content
+    const content = response.choices[0].message.parsed;
     
     // Return the report with structured data validated against schema
-    return {
-        transactions: transactions,
-        text: parsedContent.text,
-        highlights: parsedContent.highlights,
-        statistics: parsedContent.statistics
-    };
+    return content?.transaction_reports || [];
 }
     

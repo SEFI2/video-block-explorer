@@ -6,7 +6,7 @@ export interface TransactionStatistics {
     significantTransactions: number;
 }
 
-export interface TransactionRangeReport {
+export interface TransactionReport {
     transactions: Transaction[];
     text: string;
     highlights: string[];

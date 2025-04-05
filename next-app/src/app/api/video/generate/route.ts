@@ -4,7 +4,8 @@ import { createClient, SupabaseClient } from '@supabase/supabase-js';
 import { z } from 'zod';
 import { fetchAddressBlockchainData } from '@/lib/celo-api';
 
-import { generateVideoScript } from '@/lib/llm';
+import { generateTransactionReport } from '@/lib/llm';
+import { TransactionRangeReport } from '@/types/report';
 
 interface VideoRequestData {
   request_id: string;
@@ -47,18 +48,40 @@ const requestBodySchema = z.object({
   prompt: z.string(),
   duration: z.number(),
   address: z.string(),
+  report_address: z.string(),
+  chain_id: z.number(),
+  network_name: z.string(),
+  balance: z.string(),
+  transaction_count: z.number(),
 });
 
+// user_address TEXT NOT NULL,
+// prompt TEXT NOT NULL,
+// duration TEXT NOT NULL,
+// report_address TEXT NOT NULL,
+// transaction_hash TEXT NOT NULL,
+// transaction_report JSONB,
+// transaction_status TEXT,
+// status TEXT NOT NULL,
+// request_timestamp TIMESTAMP NOT NULL,
+// chain_id INTEGER NOT NULL,
+// network_name TEXT NOT NULL,
+// balance TEXT NOT NULL,
+// transaction_count INTEGER NOT NULL,
 
 // Database operations
 async function saveVideoRequest(supabaseAdmin: SupabaseClient, 
   request_id: string,
   user_address: string,
+  report_address: string,
   prompt: string,
   duration: number,
   status: string,
-  request_timestamp: string,
-  generated_text: string
+  chain_id: number,
+  network_name: string,
+  balance: string,
+  transaction_count: number,
+  transactionReports: TransactionRangeReport[]
 ) {
   // Convert VideoRequestData to Record<string, unknown> to satisfy SupabaseClient type requirements
   const dbRecord: Record<string, unknown> = {
@@ -67,16 +90,20 @@ async function saveVideoRequest(supabaseAdmin: SupabaseClient,
     prompt,
     duration,
     status,
-    request_timestamp,
-    generated_text
+    report_address,
+    chain_id,
+    network_name,
+    balance,
+    transaction_count,
+    transaction_reports: transactionReports,
   };
   
   const { error } = await supabaseAdmin
     .from('video_requests')
     .insert(dbRecord);
-  
-  if (error && error.details) {
-    console.error('Database insert error:', error.details);
+  console.log("database error", {error});
+  if (error) {
+    console.error('Database insert error:', error);
     throw error;
   }
   
@@ -113,20 +140,32 @@ export async function executeHandler(request: NextRequest) {
     return createErrorResponse('error', 400);
   }
 
-  const { prompt, duration, address } = result.data;
-  console.log(result.data);
+  const { prompt, duration, address, report_address, chain_id, network_name, balance, transaction_count } = result.data;
+  console.log({result: result.data});
  
   const blockchainData = await fetchAddressBlockchainData(address, duration);    
-  console.log(blockchainData);
+  console.log({blockchainData});
 
-    const scriptData = await generateVideoScript(prompt, duration, blockchainData.transactions);
-      
+    const transactionReports = await generateTransactionReport(prompt, blockchainData.transactions);
+      console.log({transactionReports});
   // Create a unique request ID and prepare database entry
   const videoId = uuidv4();
-  const now = new Date().toISOString();
       
   // Prepare request data
-  await saveVideoRequest(supabaseAdmin, videoId, address, prompt, duration, 'generating', now, scriptData.script);
+  await saveVideoRequest(
+    supabaseAdmin,
+    videoId,
+    address,
+    report_address,
+    prompt,
+    duration,
+    'generating',
+    chain_id,
+    network_name,
+    balance,
+    transaction_count,
+    transactionReports
+  );
   return createSuccessResponse(videoId);
 } 
 

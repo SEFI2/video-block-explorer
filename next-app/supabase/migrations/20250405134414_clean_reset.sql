@@ -1,4 +1,10 @@
--- Create video_requests table
+-- Drop existing table and all related objects
+DROP TABLE IF EXISTS video_requests CASCADE;
+
+-- Drop function if it exists
+DROP FUNCTION IF EXISTS update_updated_at_column CASCADE;
+
+-- Recreate video_requests table with the desired schema (without transaction_hash)
 CREATE TABLE IF NOT EXISTS video_requests (
   id BIGSERIAL PRIMARY KEY,
   request_id TEXT NOT NULL UNIQUE,
@@ -22,13 +28,8 @@ CREATE INDEX IF NOT EXISTS idx_video_requests_user_address ON video_requests(use
 -- Create index on status for faster filtering
 CREATE INDEX IF NOT EXISTS idx_video_requests_status ON video_requests(status);
 
--- Create RLS policies for security (optional, depends on your Supabase setup)
+-- Enable row level security
 ALTER TABLE video_requests ENABLE ROW LEVEL SECURITY;
-
--- Example policy (adjust based on your authentication strategy)
--- CREATE POLICY "Users can view their own videos" 
---   ON video_requests FOR SELECT 
---   USING (auth.uid()::text = user_address);
 
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
@@ -43,4 +44,4 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER update_video_requests_updated_at
 BEFORE UPDATE ON video_requests
 FOR EACH ROW
-EXECUTE FUNCTION update_updated_at_column(); 
+EXECUTE FUNCTION update_updated_at_column();

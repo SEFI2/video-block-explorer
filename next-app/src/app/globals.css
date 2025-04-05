@@ -248,8 +248,218 @@
   .neon-text {
     color: var(--primary);
     text-shadow: 0 0 5px rgba(59, 130, 246, 0.7), 
-                 0 0 10px rgba(59, 130, 246, 0.5),
+                 0 0 10px rgba(59, 130, 246, 0.5), 
                  0 0 15px rgba(59, 130, 246, 0.3);
+  }
+
+  /* Video list styles */
+  .my-videos {
+    padding: 2rem 1rem;
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .my-videos h2 {
+    font-size: 1.75rem;
+    font-weight: bold;
+    margin-bottom: 1.5rem;
+    color: var(--text-primary);
+  }
+
+  .create-button {
+    display: inline-block;
+    background: linear-gradient(to right, var(--primary), var(--accent));
+    color: white;
+    padding: 0.625rem 1.25rem;
+    border-radius: 0.375rem;
+    font-weight: 500;
+    margin-bottom: 2rem;
+    transition: all 0.2s;
+  }
+
+  .create-button:hover {
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5);
+    transform: translateY(-1px);
+  }
+
+  .loading, .error, .notification {
+    padding: 2rem;
+    border-radius: 0.5rem;
+    background-color: var(--gray-800);
+    text-align: center;
+    margin: 2rem 0;
+  }
+
+  .error {
+    border-left: 4px solid var(--error);
+    color: var(--error);
+  }
+
+  .notification a {
+    color: var(--primary);
+    text-decoration: underline;
+  }
+
+  .videos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+  }
+
+  .video-card {
+    background-color: var(--gray-800);
+    border-radius: 0.5rem;
+    overflow: hidden;
+    transition: transform 0.2s, box-shadow 0.2s;
+    border: 1px solid var(--gray-700);
+  }
+
+  .video-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+  }
+
+  .video-preview {
+    position: relative;
+    height: 180px;
+    background-color: var(--gray-700);
+  }
+
+  .placeholder-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    background: linear-gradient(45deg, var(--gray-800), var(--gray-700));
+  }
+
+  .status-badge {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    padding: 0.25rem 0.5rem;
+    border-radius: 1rem;
+    font-size: 0.75rem;
+    font-weight: 500;
+    color: white;
+    background-color: var(--gray-700);
+  }
+
+  .status-requested {
+    background-color: var(--gray-600);
+  }
+
+  .status-processing, .status-rendering {
+    background-color: var(--warning);
+    animation: pulse 2s infinite;
+  }
+
+  .status-previewready {
+    background-color: var(--accent);
+  }
+
+  .status-completed {
+    background-color: var(--success);
+  }
+
+  .status-failed, .status-refunded {
+    background-color: var(--error);
+  }
+
+  .status-acknowledged {
+    background-color: var(--primary);
+  }
+
+  .video-info {
+    padding: 1rem;
+  }
+
+  .video-info h3 {
+    font-size: 1rem;
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    line-height: 1.4;
+    color: var(--text-primary);
+  }
+
+  .video-meta {
+    display: flex;
+    justify-content: space-between;
+    color: var(--text-muted);
+    font-size: 0.875rem;
+    margin-bottom: 1rem;
+  }
+
+  .download-button {
+    display: block;
+    background-color: var(--primary);
+    color: white;
+    text-align: center;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    font-weight: 500;
+    transition: background-color 0.2s;
+  }
+
+  .download-button:hover {
+    background-color: var(--primary-dark);
+  }
+
+  /* Video player styles */
+  .video-player-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+
+  .video-player {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .video-container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+
+  .video-buttons {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .mt-2 {
+    margin-top: 0.5rem;
+  }
+
+  /* Remotion Player styles */
+  .remotion-player-container {
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background-color: #0f172a; /* Match the video background color */
+    margin: 0 auto;
+  }
+
+  /* Fix for aspect ratio support */
+  .aspect-w-16 {
+    position: relative;
+    padding-bottom: 56.25%; /* 16:9 aspect ratio */
+    height: 0;
+    overflow: hidden;
+  }
+  
+  .aspect-w-16 > * {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
   }
 }
 

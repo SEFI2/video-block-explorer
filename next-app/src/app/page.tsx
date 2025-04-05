@@ -20,7 +20,7 @@ type ActivityType =
 
 const VideoGenerationForm: React.FC = () => {
   const [dataDuration, setDataDuration] = useState<number>(7);
-  const [activityType, setActivityType] = useState<ActivityType>('all');
+  const [activityType, setActivityType] = useState<ActivityType>('transactions');
   const [targetAddress, setTargetAddress] = useState<string>('');
   const [showAdvanced, setShowAdvanced] = useState<boolean>(false);
   const [customPrompt, setCustomPrompt] = useState<string>('');
@@ -28,7 +28,7 @@ const VideoGenerationForm: React.FC = () => {
   const [submissionError, setSubmissionError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const router = useRouter();
-  const { account } = useWeb3();
+  const { account, balance } = useWeb3();
 
   // Set the default target address to the connected wallet address
   useEffect(() => {
@@ -66,18 +66,6 @@ const VideoGenerationForm: React.FC = () => {
       icon: faFileContract,
       description: 'Display interactions with smart contracts and dapps'
     },
-    { 
-      value: 'defi', 
-      label: 'DeFi Activity', 
-      icon: faChartLine,
-      description: 'Highlight liquidity provisions, loans, and yield farming'
-    },
-    { 
-      value: 'all', 
-      label: 'Complete Profile', 
-      icon: faLayerGroup,
-      description: 'Create a comprehensive overview of all on-chain activity'
-    }
   ];
 
   // Generate data prompt from activity type
@@ -94,12 +82,8 @@ const VideoGenerationForm: React.FC = () => {
         return `Create a visual representation of NFT activity for the ${dataDuration}, highlighting collections, purchases, sales, and overall NFT engagement.`;
       case 'contracts':
         return `Visualize smart contract interactions for the ${dataDuration}, showcasing dapps used, contract calls, and protocol engagement.`;
-      case 'defi':
-        return `Generate a visual story of DeFi activities for the ${dataDuration}, including lending, borrowing, yield farming, and liquidity provisions.`;
-      case 'all':
-      default:
-        return `Create a comprehensive visualization of all on-chain activity for the ${dataDuration}, including transactions, NFTs, smart contracts, and DeFi.`;
     }
+    return '';
   };
 
   // Function to request video generation via API
@@ -118,13 +102,22 @@ const VideoGenerationForm: React.FC = () => {
           duration,
           prompt,
           address,
+          report_address: address,
+          chain_id: 42220,
+          network_name: 'Celo Network',
+          balance: '1000',
+          transaction_count: 100,
         }),
       });
 
       const data = await response.json();
       
       if (!response.ok) {
-        throw new Error(data.error || data.message || 'Failed to generate video');
+        setSubmissionError(data.error || data.message || 'Failed to generate video');
+        return {
+          success: false,
+          error: data.error || data.message || 'Failed to generate video',
+        };
       }
       
       return {
@@ -161,7 +154,6 @@ const VideoGenerationForm: React.FC = () => {
     try {
       setIsLoading(true);
       const result = await requestVideoGeneration(dataDuration, dataPrompt, addressToUse);
-      
       if (result.success && result.videoId) {
         // Redirect to status page with the video ID, using Next.js router
         router.push(`/video/${result.videoId}`);
@@ -256,49 +248,34 @@ const VideoGenerationForm: React.FC = () => {
         </div>
         
         <div className="mt-4 mb-4">
-          <button
-            type="button"
-            onClick={() => setShowAdvanced(!showAdvanced)}
-            className="flex items-center p-2 text-sm border-none bg-transparent"
-            style={{color: 'var(--primary-light)'}}
-          >
-            <FontAwesomeIcon 
-              icon={faChevronDown} 
-              className={`mr-2 transition-transform ${showAdvanced ? 'rotate-180' : ''}`} 
-            />
-            Advanced Options
-          </button>
-          
-          {showAdvanced && (
-            <div className="card-dark p-3 mt-2 animate-fade-in">
-              <div className="form-group">
-                <label htmlFor="customPrompt" className="form-label flex items-center glow-text">
-                  <FontAwesomeIcon icon={faComment} className="mr-2" />
-                  Custom Data Prompt
-                </label>
-                <textarea
-                  id="customPrompt"
-                  value={customPrompt}
-                  onChange={(e) => setCustomPrompt(e.target.value)}
-                  disabled={isLoading}
-                  placeholder="E.g., Analyze and visualize my NFT trading activity with a focus on profit/loss patterns, top collections, and market timing..."
-                  className="form-input h-24"
-                />
-                {formErrors.customPrompt && (
-                  <p className="text-sm mt-1" style={{color: 'var(--error)'}}>
-                    {formErrors.customPrompt}
-                  </p>
-                )}
-                <div className="flex items-start mt-2">
-                  <FontAwesomeIcon icon={faInfoCircle} className="mr-2 mt-1 flex-shrink-0" style={{color: 'var(--primary-light)'}} />
-                  <p className="text-sm" style={{color: 'var(--text-secondary)'}}>
-                    You can provide a custom prompt for more specific instructions on what data to analyze and visualize.
-                    If left empty, a default prompt based on your selected Activity Type will be used.
-                  </p>
-                </div>
+          <div className="card-dark p-3 mt-2 animate-fade-in">
+            <div className="form-group">
+              <label htmlFor="customPrompt" className="form-label flex items-center glow-text">
+                <FontAwesomeIcon icon={faComment} className="mr-2" />
+                Custom Data Prompt
+              </label>
+              <textarea
+                id="customPrompt"
+                value={customPrompt}
+                onChange={(e) => setCustomPrompt(e.target.value)}
+                disabled={isLoading}
+                placeholder="E.g., Analyze and visualize my NFT trading activity with a focus on profit/loss patterns, top collections, and market timing..."
+                className="form-input h-24"
+              />
+              {formErrors.customPrompt && (
+                <p className="text-sm mt-1" style={{color: 'var(--error)'}}>
+                  {formErrors.customPrompt}
+                </p>
+              )}
+              <div className="flex items-start mt-2">
+                <FontAwesomeIcon icon={faInfoCircle} className="mr-2 mt-1 flex-shrink-0" style={{color: 'var(--primary-light)'}} />
+                <p className="text-sm" style={{color: 'var(--text-secondary)'}}>
+                  You can provide a custom prompt for more specific instructions on what data to analyze and visualize.
+                  If left empty, a default prompt based on your selected Activity Type will be used.
+                </p>
               </div>
             </div>
-          )}
+          </div>
         </div>
         
         <div className="flex justify-center mt-6">

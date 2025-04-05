@@ -12,22 +12,21 @@ export const CompositionProps = z.object({
     userAddress: z.string(),
     chainId: z.number(),
     networkName: z.string(),
-    tokenBalance: z.string(),
+    balance: z.string(),
     transactionCount: z.number(),
     reports: z.array(
-    z.object({
-      transactions: z.array(z.any()),
-      text: z.string(),
-      highlights: z.array(z.string()),
-      statistics: z.object({
-        totalValue: z.string(),
-        uniqueAddresses: z.number(),
-        significantTransactions: z.number()
-      })
+        z.object({
+        transactions: z.array(z.any()),
+        text: z.string(),
+        highlights: z.array(z.string()),
+        statistics: z.object({
+            totalValue: z.string(),
+            uniqueAddresses: z.number(),
+            significantTransactions: z.number()
+        })
+        })
+        ),
     })
-  ),
-  generatedText: z.string().optional()
-  })
 });
 
 const FPS = 30;

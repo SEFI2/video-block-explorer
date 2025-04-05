@@ -212,6 +212,7 @@ export const getBlockchainProfile = () => {
   // Return complete profile with video data
   return {
     userAddress,
+    balance: '5.43',
     chainId: 1, // Ethereum Mainnet
     networkName: 'Ethereum Mainnet',
     tokenBalance: '5.43',

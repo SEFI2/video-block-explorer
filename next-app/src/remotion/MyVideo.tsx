@@ -11,16 +11,16 @@ import {
 import { IntroScene } from './IntroScene';
 import { OutroScene } from './OutroScene';
 import { TextOverlay } from './TextOverlay';
-import { TransactionRangeReport } from '@/types/report';
+import { TransactionReport } from '@/types/report';
 
 // Interface for component props
 interface VideoTransactionProps {
   userAddress: string;
   chainId: number;
   networkName: string;
-  tokenBalance: string;
+  balance: string;
   transactionCount: number;
-  reports: TransactionRangeReport[],
+  reports: TransactionReport[],
 }
 
 // Simplified video preview component
