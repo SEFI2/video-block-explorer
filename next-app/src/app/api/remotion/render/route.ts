@@ -40,16 +40,17 @@ function createErrorResponse(message: string, status: number) {
   }
   
 // Success response formatting
-function createSuccessResponse(videoId: string) {
+function createSuccessResponse(videoId: string, url: string) {
     return NextResponse.json({ 
         success: true, 
         videoId,
+        url,
         message: 'Video rendered successfully'
     });
 }
   
 
-export async function POST(request: Request) {
+export async function handler(request: Request) {
 // Get Supabase admin client for this request
 const supabaseAdmin = getSupabaseAdmin();
   
@@ -67,7 +68,7 @@ if (!supabaseAdmin) {
         videoId
     } = parsedBody.data;
 
-    const { error, data } = await supabaseAdmin.from('videos').select('*').eq('request_id', videoId).single();
+    const { error, data } = await supabaseAdmin.from('video_requests').select('*').eq('request_id', videoId).single();
     if (error) {
         return createErrorResponse(error.message, 500);
     }
@@ -110,32 +111,34 @@ if (!supabaseAdmin) {
   console.log({renderId, bucketName, cloudWatchLogs, cloudWatchMainLogs, lambdaInsightsLogs, folderInS3Console, progressJsonInConsole})
 
   while(true){
-  const renderProgress = await getRenderProgress({
-    bucketName,
-    functionName: speculateFunctionName({
-      diskSizeInMb: DISK,
-      memorySizeInMb: RAM,
-      timeoutInSeconds: TIMEOUT,
-    }),
-    region: REGION as AwsRegion,
-    renderId,
-  });
+    const renderProgress = await getRenderProgress({
+        bucketName,
+        functionName: speculateFunctionName({
+        diskSizeInMb: DISK,
+        memorySizeInMb: RAM,
+        timeoutInSeconds: TIMEOUT,
+        }),
+        region: REGION as AwsRegion,
+        renderId,
+    });
 
-  if (renderProgress.fatalErrorEncountered) {
-    return {
-      type: "error",
-      message: renderProgress.errors[0].message,
-    };
-  }
+    if (renderProgress.fatalErrorEncountered) {
+        console.log('fatal error', renderProgress.errors[0].message);
+        return createErrorResponse(renderProgress.errors[0].message, 500);
+    }
 
-  if (renderProgress.done) {
-    return {
-      type: "done",
-      url: renderProgress.outputFile as string,
-      size: renderProgress.outputSizeInBytes as number,
-    };
-  }
-  await sleep(3000);
+    if (renderProgress.done) {
+        return createSuccessResponse(videoId, renderProgress.outputFile as string);
+    }
+    await sleep(3000);
+    }
 }
 
+export async function POST(request: Request) {
+    try {
+        return handler(request);
+    } catch (error) {
+        console.error('Error rendering video:', error);
+        return createErrorResponse(error instanceof Error ? error.message : 'Error rendering video', 500);
+    }
 }

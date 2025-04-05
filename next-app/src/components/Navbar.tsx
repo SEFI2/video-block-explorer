@@ -217,7 +217,7 @@ const Navbar: React.FC = () => {
 
                   {/* Center nav links */}
                   <div className="hidden md:flex items-center space-x-1">
-                    {active && (
+                    
                       <Link href="/my-videos" className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                         isActive('/my-videos')
                           ? 'bg-blue-600/20 text-blue-400 shadow-[0_0_10px_rgba(37,99,235,0.2)]'
@@ -226,7 +226,7 @@ const Navbar: React.FC = () => {
                         <FontAwesomeIcon icon={faFilm} className="mr-2" />
                         My Videos
                       </Link>
-                    )}
+                
                     
                     <Link href="/all-videos" className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
                         isActive('/all-videos')

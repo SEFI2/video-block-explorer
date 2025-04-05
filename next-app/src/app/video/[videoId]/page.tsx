@@ -26,6 +26,9 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
   const [videoDetails, setVideoDetails] = useState<VideoDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [renderLoading, setRenderLoading] = useState(false);
+  const [renderUrl, setRenderUrl] = useState<string | null>(null);
+  const [renderError, setRenderError] = useState<string | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -66,6 +69,35 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
   function formatDate(dateString: string) {
     return new Date(dateString).toLocaleString();
   }
+
+  const handleRenderVideo = async () => {
+    try {
+      setRenderLoading(true);
+      setRenderUrl(null);
+      setRenderError(null);
+      
+      const response = await fetch(`/api/remotion/render`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ videoId }),
+      });
+      
+      const data = await response.json();
+      console.log('render data', data);
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to render video');
+      }
+      
+      setRenderUrl(data.url);
+    } catch (err) {
+      console.error('Error rendering video:', err);
+      setRenderError(err instanceof Error ? err.message : 'Failed to render video');
+    } finally {
+      setRenderLoading(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -166,12 +198,50 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
             />
           </div>
 
+          {/* Render URL or Error Display */}
+          {renderUrl && (
+            <div className="mb-6 p-4 bg-green-100 border border-green-400 text-green-700 rounded">
+              <p className="font-medium">Render completed successfully!</p>
+              <a 
+                href={renderUrl} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-blue-600 hover:underline break-all"
+              >
+                {renderUrl}
+              </a>
+            </div>
+          )}
+          
+          {renderError && (
+            <div className="mb-6 p-4 bg-red-100 border border-red-400 text-red-700 rounded">
+              <p className="font-medium">Render failed</p>
+              <p>{renderError}</p>
+            </div>
+          )}
+
           <div className="flex justify-between mt-8">
             <button 
               onClick={() => router.push('/my-videos')}
               className="px-4 py-2 bg-gray-800 text-gray-200 rounded hover:bg-gray-700 transition-colors"
             >
               Back to My Videos
+            </button>
+            
+            <button 
+              onClick={handleRenderVideo}
+              disabled={renderLoading}
+              className={`px-4 py-2 ${renderLoading ? 'bg-blue-400' : 'bg-blue-600'} text-white rounded hover:bg-blue-700 transition-colors flex items-center`}
+            >
+              {renderLoading ? (
+                <>
+                  <svg className="animate-spin -ml-1 mr-2 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                  Rendering...
+                </>
+              ) : 'Render Video'}
             </button>
           </div>
         </div>
