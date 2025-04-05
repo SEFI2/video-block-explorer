@@ -20,14 +20,15 @@ interface VideoTransactionProps {
   networkName: string;
   balance: string;
   transactionCount: number;
+  introText: string;
   reports: TransactionReport[],
+  outroText: string;
 }
 
 // Simplified video preview component
 export const VideoPreview: React.FC<{props: VideoTransactionProps}> = ({props}) => {
   // Must use useVideoConfig() at the top level of a Remotion component
   const videoConfig = useVideoConfig();
-  console.log("VideoPreview videoConfig:", videoConfig);
   
   // Check if reports exist to prevent errors
   const reports = props.reports || [];
@@ -37,7 +38,7 @@ export const VideoPreview: React.FC<{props: VideoTransactionProps}> = ({props}) 
       {/* Use Remotion's built-in Series instead of TransitionSeries */}
       <Series>
         <Series.Sequence durationInFrames={5 * videoConfig.fps}>
-          <IntroScene userAddress={props.userAddress || "0x..."} />
+          <IntroScene userAddress={props.userAddress} introText={props.introText} />
         </Series.Sequence>
         
         {reports.length > 0 && reports.map((report, index) => (
@@ -53,7 +54,7 @@ export const VideoPreview: React.FC<{props: VideoTransactionProps}> = ({props}) 
         ))}
         
         <Series.Sequence durationInFrames={5 * videoConfig.fps}>
-          <OutroScene userAddress={props.userAddress || "0x..."} />
+          <OutroScene userAddress={props.userAddress} outroText={props.outroText} />
         </Series.Sequence>
       </Series>
     </AbsoluteFill>
@@ -62,7 +63,7 @@ export const VideoPreview: React.FC<{props: VideoTransactionProps}> = ({props}) 
 
 // Scene component for reports
 const ReportScene: React.FC<{
-  report: TransactionRangeReport;
+  report: TransactionReport;
   index: number;
 }> = ({ report, index }) => {  
   const videoConfig = useVideoConfig();

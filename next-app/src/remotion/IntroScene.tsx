@@ -3,9 +3,10 @@ import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 
 interface IntroSceneProps {
   userAddress: string;
+  introText: string;
 }
 
-export const IntroScene: React.FC<IntroSceneProps> = ({ userAddress }) => {
+export const IntroScene: React.FC<IntroSceneProps> = ({ userAddress, introText }) => {
   const frame = useCurrentFrame();
   
   // Animation values

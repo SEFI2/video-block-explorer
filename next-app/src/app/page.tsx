@@ -172,141 +172,185 @@ const VideoGenerationForm: React.FC = () => {
   };
 
   return (
-    <div className="card-gradient animate-slide-up p-4">
-      <form onSubmit={handleSubmit} className="glass p-4 rounded">
-        <div className="form-group">
-          <label htmlFor="dataDuration" className="form-label flex items-center glow-text">
-            <FontAwesomeIcon icon={faClock} className="mr-2" />
-            Data Duration (days)
-          </label>
-          <select
-            id="dataDuration"
-            value={dataDuration}
-            onChange={(e) => setDataDuration(parseInt(e.target.value))}
-            disabled={isLoading}
-            className="form-input"
-          >
-            {durationOptions.map((option) => (
-              <option key={option} value={option}>
-                {option}
-              </option>
-            ))}
-          </select>
-          <p className="text-sm mt-1" style={{color: 'var(--text-secondary)'}}>
-            Select the timeframe for the on-chain data you want to visualize.
-          </p>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="targetAddress" className="form-label flex items-center glow-text">
-            <FontAwesomeIcon icon={faUser} className="mr-2" />
-            Target Address (Optional)
-          </label>
-          <input
-            id="targetAddress"
-            type="text"
-            value={targetAddress}
-            onChange={(e) => setTargetAddress(e.target.value)}
-            disabled={isLoading}
-            placeholder={account ? "Using connected wallet address" : "0x..."}
-            className="form-input"
-          />
-          {formErrors.targetAddress && (
-            <p className="text-sm mt-1" style={{color: 'var(--error)'}}>
-              {formErrors.targetAddress}
+    <div className="flex justify-center items-center min-h-[calc(100vh-80px)] px-4 py-8">
+      <div className="w-full max-w-4xl animate-slide-up backdrop-blur-md rounded-2xl overflow-hidden border border-gray-700/50 shadow-[0_8px_30px_rgb(0,0,0,0.12)] shadow-primary/5">
+        <div className="bg-gradient-to-br from-gray-800/70 to-gray-900/90 p-6 md:p-8">
+          <div className="text-center mb-8">
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              Blockchain Activity Visualizer
+            </h1>
+            <p className="text-gray-300 max-w-2xl mx-auto">
+              Create a beautiful video visualization of your on-chain activity with just a few clicks
             </p>
-          )}
-          <p className="text-sm mt-1" style={{color: 'var(--text-secondary)'}}>
-            Using connected wallet address by default. You can enter a different address to generate a video for another wallet.
-          </p>
-        </div>
-        
-        <div className="form-group">
-          <label htmlFor="activityType" className="form-label flex items-center glow-text">
-            <FontAwesomeIcon icon={faSatelliteDish} className="mr-2" />
-            Activity Type
-          </label>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2 mt-2">
-            {activityOptions.map((option) => (
-              <div
-                key={option.value}
-                className={`p-3 rounded cursor-pointer transition-all ${
-                  activityType === option.value
-                    ? 'card-dark glow-border'
-                    : 'glass'
-                }`}
-                onClick={() => setActivityType(option.value as ActivityType)}
-              >
-                <div className="flex items-center mb-1">
-                  <FontAwesomeIcon icon={option.icon} className="mr-2" style={{color: 'var(--primary-light)'}} />
-                  <span className="font-medium">{option.label}</span>
-                </div>
-                <p className="text-sm" style={{color: 'var(--text-secondary)'}}>{option.description}</p>
-              </div>
-            ))}
           </div>
-        </div>
-        
-        <div className="mt-4 mb-4">
-          <div className="card-dark p-3 mt-2 animate-fade-in">
-            <div className="form-group">
-              <label htmlFor="customPrompt" className="form-label flex items-center glow-text">
-                <FontAwesomeIcon icon={faComment} className="mr-2" />
-                Custom Data Prompt
+          
+          <form onSubmit={handleSubmit} className="space-y-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {/* Duration Selection */}
+              <div className="bg-gray-800/50 rounded-xl p-5 backdrop-blur-sm border border-gray-700/50 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/10">
+                <label htmlFor="dataDuration" className="form-label flex items-center text-base mb-3">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 mr-3">
+                    <FontAwesomeIcon icon={faClock} className="text-primary" />
+                  </div>
+                  <span>Time Period</span>
+                </label>
+                <select
+                  id="dataDuration"
+                  value={dataDuration}
+                  onChange={(e) => setDataDuration(parseInt(e.target.value))}
+                  disabled={isLoading}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700/50 border border-gray-600/50 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                >
+                  {durationOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option} {option === 1 ? 'day' : 'days'}
+                    </option>
+                  ))}
+                </select>
+                <p className="text-xs mt-2 text-gray-400">
+                  Select the timeframe for your on-chain data visualization
+                </p>
+              </div>
+              
+              {/* Target Address */}
+              <div className="bg-gray-800/50 rounded-xl p-5 backdrop-blur-sm border border-gray-700/50 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/10">
+                <label htmlFor="targetAddress" className="form-label flex items-center text-base mb-3">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 mr-3">
+                    <FontAwesomeIcon icon={faUser} className="text-primary" />
+                  </div>
+                  <span>Wallet Address</span>
+                </label>
+                <input
+                  id="targetAddress"
+                  type="text"
+                  value={targetAddress}
+                  onChange={(e) => setTargetAddress(e.target.value)}
+                  disabled={isLoading}
+                  placeholder={account ? "Using connected wallet address" : "0x..."}
+                  className="w-full px-4 py-3 rounded-lg bg-gray-700/50 border border-gray-600/50 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all"
+                />
+                {formErrors.targetAddress && (
+                  <p className="text-xs mt-2 text-red-400">
+                    {formErrors.targetAddress}
+                  </p>
+                )}
+                <p className="text-xs mt-2 text-gray-400">
+                  {account ? "Using connected wallet by default" : "Enter an Ethereum address to analyze"}
+                </p>
+              </div>
+            </div>
+            
+            {/* Activity Type Selection */}
+            <div className="bg-gray-800/50 rounded-xl p-5 backdrop-blur-sm border border-gray-700/50 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/10">
+              <label className="form-label flex items-center text-base mb-4">
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 mr-3">
+                  <FontAwesomeIcon icon={faSatelliteDish} className="text-primary" />
+                </div>
+                <span>Activity Type</span>
+              </label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                {activityOptions.map((option) => (
+                  <div
+                    key={option.value}
+                    onClick={() => setActivityType(option.value as ActivityType)}
+                    className={`relative cursor-pointer rounded-xl transition-all duration-300 ${
+                      activityType === option.value
+                        ? 'bg-primary/20 border-2 border-primary shadow-md shadow-primary/20'
+                        : 'bg-gray-700/30 border border-gray-600/50 hover:bg-gray-700/50'
+                    }`}
+                  >
+                    <div className="p-4">
+                      <div className="flex items-center mb-2">
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                          activityType === option.value ? 'bg-primary/30' : 'bg-gray-700'
+                        }`}>
+                          <FontAwesomeIcon icon={option.icon} className={
+                            activityType === option.value ? 'text-white' : 'text-gray-300'
+                          } />
+                        </div>
+                        <span className={`ml-2 font-medium ${
+                          activityType === option.value ? 'text-white' : 'text-gray-300'
+                        }`}>
+                          {option.label}
+                        </span>
+                      </div>
+                      <p className="text-xs text-gray-400">{option.description}</p>
+                    </div>
+                    {activityType === option.value && (
+                      <div className="absolute top-2 right-2 w-3 h-3 bg-primary rounded-full"></div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+            
+            {/* Custom Data Prompt */}
+            <div className="bg-gray-800/50 rounded-xl p-5 backdrop-blur-sm border border-gray-700/50 transition-all hover:border-primary/30 hover:shadow-md hover:shadow-primary/10">
+              <label htmlFor="customPrompt" className="form-label flex items-center text-base mb-3">
+                <div className="w-8 h-8 flex items-center justify-center rounded-full bg-primary/10 mr-3">
+                  <FontAwesomeIcon icon={faComment} className="text-primary" />
+                </div>
+                <span>Custom Data Prompt</span>
               </label>
               <textarea
                 id="customPrompt"
                 value={customPrompt}
                 onChange={(e) => setCustomPrompt(e.target.value)}
                 disabled={isLoading}
-                placeholder="E.g., Analyze and visualize my NFT trading activity with a focus on profit/loss patterns, top collections, and market timing..."
-                className="form-input h-24"
+                placeholder="E.g., Analyze and visualize my NFT trading activity with a focus on profit/loss patterns..."
+                className="w-full px-4 py-3 rounded-lg bg-gray-700/50 border border-gray-600/50 text-white focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all min-h-[100px] resize-none"
               />
               {formErrors.customPrompt && (
-                <p className="text-sm mt-1" style={{color: 'var(--error)'}}>
+                <p className="text-xs mt-2 text-red-400">
                   {formErrors.customPrompt}
                 </p>
               )}
-              <div className="flex items-start mt-2">
-                <FontAwesomeIcon icon={faInfoCircle} className="mr-2 mt-1 flex-shrink-0" style={{color: 'var(--primary-light)'}} />
-                <p className="text-sm" style={{color: 'var(--text-secondary)'}}>
-                  You can provide a custom prompt for more specific instructions on what data to analyze and visualize.
-                  If left empty, a default prompt based on your selected Activity Type will be used.
+              <div className="flex mt-2 text-xs text-gray-400">
+                <FontAwesomeIcon icon={faInfoCircle} className="text-primary mt-1 mr-2 flex-shrink-0" />
+                <p>
+                  Optionally provide specific instructions on what data to analyze and visualize. 
+                  If left empty, we&apos;ll use a default prompt based on your selected activity type.
                 </p>
               </div>
             </div>
-          </div>
-        </div>
-        
-        <div className="flex justify-center mt-6">
-          <button
-            type="submit"
-            disabled={isLoading}
-            className={`btn btn-primary w-full max-w-md ${isLoading ? 'opacity-75' : ''}`}
-          >
-            {isLoading ? (
-              <>
-                <div className="spinner mr-2"></div>
-                <span>Processing...</span>
-              </>
-            ) : (
-              <>
-                <FontAwesomeIcon icon={faVideoCamera} className="mr-2" />
-                <span>Generate Video</span>
-              </>
+            
+            {/* Submit Button */}
+            <div className="mt-8">
+              <button
+                type="submit"
+                disabled={isLoading}
+                className={`w-full flex items-center justify-center py-4 px-6 rounded-xl text-white font-medium transition-all duration-300 bg-gradient-to-r from-primary to-accent hover:shadow-lg hover:shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] ${
+                  isLoading ? 'opacity-80 cursor-not-allowed' : ''
+                }`}
+              >
+                {isLoading ? (
+                  <>
+                    <svg className="animate-spin -ml-1 mr-3 h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <span>Processing...</span>
+                  </>
+                ) : (
+                  <>
+                    <FontAwesomeIcon icon={faVideoCamera} className="mr-2" />
+                    <span>Generate Video Visualization</span>
+                  </>
+                )}
+              </button>
+            </div>
+            
+            {/* Error Message */}
+            {submissionError && (
+              <div className="animate-fade-in mt-4 p-4 rounded-lg bg-red-500/10 border border-red-500/30 text-center">
+                <p className="text-red-400 text-sm font-medium">
+                  {submissionError}
+                </p>
+              </div>
             )}
-          </button>
+          </form>
         </div>
-        
-        {/* Display submission errors below the button */}
-        {submissionError && (
-          <div className="mt-4 p-3 rounded animate-fade-in" style={{backgroundColor: 'rgba(239, 68, 68, 0.1)', border: '1px solid var(--error)'}}>
-            <p className="text-sm text-center font-medium" style={{color: 'var(--error)'}}>
-              {submissionError}
-            </p>
-          </div>
-        )}
-      </form>
+      </div>
     </div>
   );
 };

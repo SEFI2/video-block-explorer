@@ -2,10 +2,11 @@ import React from 'react';
 import { AbsoluteFill, useCurrentFrame, interpolate } from 'remotion';
 
 interface OutroSceneProps {
-  userAddress: string;
+    userAddress: string;
+    outroText: string;
 }
 
-export const OutroScene: React.FC<OutroSceneProps> = ({ userAddress }) => {
+export const OutroScene: React.FC<OutroSceneProps> = ({ userAddress, outroText }) => {
   const frame = useCurrentFrame();
   
   // Animation values

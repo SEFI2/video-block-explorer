@@ -14,6 +14,8 @@ interface VideoDetails {
   transaction_count: number;
   network_name: string;
   chain_id: number;
+  intro_text: string;
+  outro_text: string;
   transaction_reports: TransactionReport[];
   report_address: string;
   status: string;
@@ -123,6 +125,8 @@ export function VideoStatusPage({ videoId }: { videoId: string }) {
       networkName: videoDetails.network_name || "Ethereum",
       balance: videoDetails.balance || "0",
       transactionCount: videoDetails.transaction_count || 0,
+      introText: videoDetails.intro_text || "",
+      outroText: videoDetails.outro_text || "",
       reports: videoDetails.transaction_reports
     }
   };

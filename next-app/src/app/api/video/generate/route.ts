@@ -5,7 +5,7 @@ import { z } from 'zod';
 import { fetchAddressBlockchainData } from '@/lib/celo-api';
 
 import { generateTransactionReport } from '@/lib/llm';
-import { TransactionRangeReport } from '@/types/report';
+import { TransactionReport } from '@/types/report';
 
 interface VideoRequestData {
   request_id: string;
@@ -81,7 +81,9 @@ async function saveVideoRequest(supabaseAdmin: SupabaseClient,
   network_name: string,
   balance: string,
   transaction_count: number,
-  transactionReports: TransactionRangeReport[]
+  intro_text: string,
+  transactionReports:  TransactionReport[],
+  outro_text: string
 ) {
   // Convert VideoRequestData to Record<string, unknown> to satisfy SupabaseClient type requirements
   const dbRecord: Record<string, unknown> = {
@@ -96,6 +98,8 @@ async function saveVideoRequest(supabaseAdmin: SupabaseClient,
     balance,
     transaction_count,
     transaction_reports: transactionReports,
+    intro_text,
+    outro_text
   };
   
   const { error } = await supabaseAdmin
@@ -146,8 +150,8 @@ export async function executeHandler(request: NextRequest) {
   const blockchainData = await fetchAddressBlockchainData(address, duration);    
   console.log({blockchainData});
 
-    const transactionReports = await generateTransactionReport(prompt, blockchainData.transactions);
-      console.log({transactionReports});
+    const report = await generateTransactionReport(prompt, duration, blockchainData.transactions);
+        console.log({report});
   // Create a unique request ID and prepare database entry
   const videoId = uuidv4();
       
@@ -162,9 +166,11 @@ export async function executeHandler(request: NextRequest) {
     'generating',
     chain_id,
     network_name,
-    balance,
+    blockchainData.balance,
     transaction_count,
-    transactionReports
+    report.intro_text,
+    report.transaction_reports,
+    report.outro_text
   );
   return createSuccessResponse(videoId);
 } 

@@ -3,10 +3,10 @@ import {
     NftTokenTransaction,
     TokenTransaction
 } from '@/types/onchain';
-import { TransactionRangeReport, TransactionStatistics } from '@/types/report';
 import OpenAI from 'openai';
 import { z } from 'zod';
 import { zodResponseFormat } from 'openai/helpers/zod';
+import { TransactionReport } from '@/types/report';
 
 // Initialize OpenAI client
 const openai = new OpenAI({
@@ -51,7 +51,9 @@ const TransactionReportSchema = z.object({
 });
 
 const TransactionReportsSchema = z.object({
-    transaction_reports: z.array(TransactionReportSchema)
+    intro_text: z.string(),
+    transaction_reports: z.array(TransactionReportSchema),
+    outro_text: z.string(),
 });
 
 /**
@@ -103,11 +105,16 @@ export function splitTransactionsByTime(
 
 export async function generateTransactionReport(
     prompt: string,
+    durationInDays: number,
     transactions: Transaction[]
-): Promise<TransactionRangeReport[]> {
+): Promise<{
+    intro_text: string;
+    transaction_reports: TransactionReport[];
+    outro_text: string;
+}> {
 
     // Create system message with instructions for structure
-    const systemMessage = `You are an AI that analyzes blockchain transaction data and generates insightful reports.
+    let systemMessage = `You are an AI that analyzes blockchain transaction data and generates insightful reports.
 
 Analysis guidelines:
 1. Identify patterns in transaction behavior
@@ -118,11 +125,25 @@ Analysis guidelines:
 
 Your analysis should be factual, informative, and engaging for a video narration.
 
+Output should be contains 3 sections:
+- intro_text: A narrative description of the transactions for the video around 30 words
+- transaction_reports: An array of transaction reports
+- outro_text: A narrative description of the transactions for the video around 40 words
+
+Return at least 4 different transaction reports.
 For each transaction report, respond with a valid JSON object with these properties:
 - text: A narrative description of the transactions for the video
 - transactions: Selected transactions that are relevant to the analysis report
 - highlights: An array of key insights from the transactions
-- statistics: An object containing totalValue (string), uniqueAddresses (number), and significantTransactions (number)`;
+- statistics: An object containing totalValue (string), uniqueAddresses (number), and significantTransactions (number)
+
+Note transactions have occured in the last ${durationInDays} days.`;
+
+    if (prompt.length > 0) {
+        systemMessage += `
+    User Specific Prompt: ${prompt}
+    `;
+    }
 
     // Make the API call to OpenAI with JSON response format
     const response = await openai.beta.chat.completions.parse({
@@ -145,6 +166,10 @@ Here are the transactions: ${JSON.stringify(transactions)}`
     const content = response.choices[0].message.parsed;
     
     // Return the report with structured data validated against schema
-    return content?.transaction_reports || [];
+    return {
+        intro_text: content?.intro_text || '',
+        transaction_reports: content?.transaction_reports || [],
+        outro_text: content?.outro_text || ''
+    };
 }
     
