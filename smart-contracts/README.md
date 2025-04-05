@@ -45,6 +45,24 @@ npx hardhat run scripts/deploy.ts --network sepolia
 npx hardhat verify --network sepolia DEPLOYED_CONTRACT_ADDRESS
 ```
 
+## Alfajores Testnet Deployment
+
+To test on Celo's Alfajores testnet:
+
+1. Get Alfajores testnet CELO from the [Celo Faucet](https://faucet.celo.org/alfajores)
+2. Update your `.env` file with your private key (without 0x prefix)
+3. Run the deployment and test script:
+
+```bash
+npm run deploy:alfajores
+```
+
+This will:
+- Deploy the contract to Alfajores
+- Mint a test token
+- Verify ownership
+- Test withdrawal functions
+
 ## Contract Information
 
 - **Name**: VideoReportNFT

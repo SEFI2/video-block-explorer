@@ -10,13 +10,26 @@ const config: HardhatUserConfig = {
   solidity: "0.8.20",
   networks: {
     hardhat: {},
-    sepolia: {
-      url: process.env.SEPOLIA_URL || "https://eth-sepolia.g.alchemy.com/v2/your-api-key",
-      accounts: [PRIVATE_KEY]
+    alfajores: {
+      url: process.env.ALFAJORES_URL || "",
+      accounts: [PRIVATE_KEY],
+      chainId: 44787
     }
   },
   etherscan: {
-    apiKey: process.env.ETHERSCAN_API_KEY
+    apiKey: {
+      alfajores: process.env.CELOSCAN_API_KEY || ""
+    },
+    customChains: [
+      {
+        network: "alfajores",
+        chainId: 44787,
+        urls: {
+          apiURL: process.env.ALFAJORES_SCAN_API_URL || "",
+          browserURL: process.env.ALFAJORES_SCAN_BROWSER_URL || ""
+        }
+      }
+    ]
   }
 };
 

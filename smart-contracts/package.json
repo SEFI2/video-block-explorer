@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "deploy:alfajores": "hardhat run scripts/deploy-and-test-alfajores.ts --network alfajores"
   },
   "keywords": [],
   "author": "",
@@ -19,5 +20,9 @@
     "hardhat": "^2.22.19",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"
+  },
+  "dependencies": {
+    "@celo/contractkit": "^9.1.0",
+    "viem": "^2.25.0"
   }
 }
