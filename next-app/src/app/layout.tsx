@@ -7,6 +7,7 @@ import Navbar from '@/components/Navbar';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCopyright, faHeart } from '@fortawesome/free-solid-svg-icons';
 import './globals.css';
+import { Analytics } from '@vercel/analytics/next';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -45,6 +46,7 @@ export default function RootLayout({
             <Footer />
           </div>
         </Web3Provider>
+        <Analytics />
       </body>
     </html>
   );
