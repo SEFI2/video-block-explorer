@@ -19,18 +19,14 @@ export const MyVideos: React.FC = () => {
   const [videos, setVideos] = useState<ExtendedVideoData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
-    console.log({ account });
+  console.log({ account });
+  
   // Load videos from database
   useEffect(() => {
     const fetchVideos = async () => {
-      if (!active || !account) {
-        setIsLoading(false);
-        return;
-      }
-
       try {
         setIsLoading(true);
-        console.log('Fetching videos for account:', account);
+        console.log('Fetching all videos');
         
         // Fetch videos through API instead of direct Supabase query
         const response = await fetch(`/api/videos`);
@@ -56,7 +52,7 @@ export const MyVideos: React.FC = () => {
     };
 
     fetchVideos();
-  }, [active, account]);
+  }, []); // Remove dependency on active and account
 
   const getStatusBadgeColor = (status: VideoStatus) => {
     switch (status) {
@@ -70,26 +66,6 @@ export const MyVideos: React.FC = () => {
         return 'bg-gray-100 text-gray-800';
     }
   };
-
-  if (!active) {
-    return (
-      <div className="flex flex-col items-center justify-center p-8 min-h-[60vh]">
-        <h2 className="text-3xl font-bold mb-6 text-gray-800">All Videos</h2>
-        <div className="p-8 bg-gradient-to-br from-slate-50 to-slate-100 rounded-xl shadow-sm text-center max-w-md w-full">
-          <div className="mb-4 text-gray-400">
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-12 w-12 mx-auto" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          </div>
-          <h3 className="text-xl font-semibold mb-2 text-gray-700">Connect Wallet</h3>
-          <p className="text-gray-600 mb-6">Please connect your wallet to view your videos</p>
-          <button className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-sm">
-            Connect Wallet
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="p-6 sm:p-8 max-w-7xl mx-auto">
@@ -112,7 +88,7 @@ export const MyVideos: React.FC = () => {
       {isLoading ? (
         <div className="flex flex-col justify-center items-center h-60">
           <div className="w-12 h-12 border-4 border-blue-200 border-t-blue-600 rounded-full animate-spin mb-4"></div>
-          <div className="text-gray-500">Loading your videos...</div>
+          <div className="text-gray-500">Loading videos...</div>
         </div>
       ) : error ? (
         <div className="p-6 bg-red-50 border border-red-200 rounded-lg text-red-600 shadow-sm">
@@ -132,7 +108,7 @@ export const MyVideos: React.FC = () => {
             </svg>
           </div>
           <h3 className="text-xl font-semibold mb-3 text-gray-700">No videos yet</h3>
-          <p className="text-gray-600 mb-6 max-w-md mx-auto">You haven&apos;t created any videos yet. Get started by creating your first AI-generated video.</p>
+          <p className="text-gray-600 mb-6 max-w-md mx-auto">No videos have been created yet. Get started by creating your first AI-generated video.</p>
           <Link href="/" className="px-6 py-2.5 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors inline-flex items-center gap-2 shadow-sm">
             <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
               <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
@@ -208,7 +184,7 @@ export const MyVideos: React.FC = () => {
                       </div>
                     ) : (
                       <Link 
-                        href={`/video/${video.id}`}
+                        href={`/video/${video.request_id}`}
                         className="text-xs px-3 py-1.5 bg-gray-100 text-gray-700 rounded hover:bg-gray-200 transition-colors text-center block font-medium"
                       >
                         View Details
